@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Error 500</title>
+    <link href="{{ asset('public/css/core.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('public/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('public/css/styles.css') }}" rel="stylesheet">
+  </head>
+  <body>
+	  <div class="wrap-center">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12 error-page text-center parallax-fade-top" style="top: 0px; opacity: 1;">
+					<a class="navbar-brand" href="https://oprivado.ao">
+								<img src="/public/img/logotipo.svg" width="160px" data-logo="logo-1739358685.png" data-logo-2="logo_2-1740329415.png" alt="Oprivado Angola" class="logo align-bottom">
+						</a>
+					<p style=" font-size: 27px; font-weight: 500; color: black; " class="mt-3 mb-5 text-break">Erro 500, erro interno no site</p>
+					<p class="error-link mt-5">Contacte o suporte para resolução: info@oprivado.ao</p>
+				</div>
+			</div>
+		</div>
+	</div>
+  </body>
+</html>

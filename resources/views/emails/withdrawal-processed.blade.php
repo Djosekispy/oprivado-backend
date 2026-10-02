@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <style type="text/css" rel="stylesheet" media="all">
+        /* Media Queries */
+        @media  only screen and (max-width: 500px) {
+            .button {
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; width: 100%; background-color: #F2F4F6;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td style="width: 100%; margin: 0; padding: 0; background-color: #F2F4F6;" align="center">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <!-- Logo -->
+                    <tr>
+                        <td style="padding: 25px 0; text-align: center;">
+                            <a style="font-family: Arial, &#039;Helvetica Neue&#039;, Helvetica, sans-serif; font-size: 16px; font-weight: bold; color: #2F3133; text-decoration: none; text-shadow: 0 1px 0 white;" href="https://oprivado.ao/" target="_blank">
+                               <img src="https://oprivado.ao/public/images/logo.png" style="position: relative; border: none; height: auto; width: auto; max-width: 150px !important;">
+                            </a>
+                        </td>
+                    </tr>
+
+        <!-- Email Body -->
+        <tr>
+            <td style="width: 100%; margin: 0; padding: 0; border-top: 1px solid #EDEFF2; border-bottom: 1px solid #EDEFF2; background-color: #FFF;" width="100%">
+                <table style="width: auto; max-width: 570px; margin: 0 auto; padding: 0;" align="center" width="570" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style="font-family: Arial, &#039;Helvetica Neue&#039;, Helvetica, sans-serif; padding: 35px;">
+                            <!-- Greeting -->
+                            <h1 style="margin-top: 0; color: #2F3133; font-size: 17px; font-weight: bold; text-align: left;">
+                              {{trans('emails.hello')}} {{$fullname}},
+                            </h1>
+
+                            <!-- Intro -->
+                            <p style="margin-top: 0; color: #74787E; font-size: 16px; line-height: 1.5em;">
+                              {{trans('emails.withdrawal_msg')}} <strong>{{$amount}}</strong>. Continue a produzir mais conteúdos originais para aumentar os seus ganhos no Oprivado.
+                            </p>
+
+                            <!-- Salutation -->
+                            <p style="margin-top: 0; color: #74787E; font-size: 16px; line-height: 1.5em;">
+                               {{$fullname}}, Desfrute dos seus ganhos porquê você merece! 
+                            </p>
+							
+							<div style="background-color: #fffbeb;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 24px 0;color: #92400e!important;" >
+        <h4 style="color: #92400e!important;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 12px 0;">Importante:</h4>
+        <ul style="color: #b45309;
+    margin: 0;
+    padding-left: 20px;">
+          <li style="margin-bottom: 6px;
+    font-size: 14px;">Pagamentos entre o mesmo banco (Banco ATLANTICO) são creditados na mesma hora; transferências entre bancos diferentes podem levar até 24 horas para refletirem na conta.</li>
+        </ul>
+      </div>
+							
+                          </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+          <!-- Footer -->
+            <tr>
+                <td>
+                    <table style="width: auto; max-width: 570px; margin: 0 auto; padding: 0; text-align: center;" align="center" width="570" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td style="font-family: Arial, &#039;Helvetica Neue&#039;, Helvetica, sans-serif; color: #AEAEAE; padding: 35px; text-align: center;">
+                                <p style="margin-top: 0; color: #74787E; font-size: 12px; line-height: 1.5em;">
+                                    &copy; <?php echo date('Y'); ?>
+                                    {{$title_site}}
+                                    {{trans('emails.rights_reserved')}}
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
+</table>
+</body>
+</html>
