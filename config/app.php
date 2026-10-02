@@ -61,6 +61,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Pro Plan Price
+    |--------------------------------------------------------------------------
+    |
+    | This value controls the amount charged to activate the Pro plan.
+    | You can configure it in the environment file with PRO_PRICE.
+    |
+    */
+
+    'pro_price' => (float) env('PRO_PRICE', 5000000000),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

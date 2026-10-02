@@ -2608,6 +2608,7 @@ public function becomePro()
 {
     try {
         $user = auth()->user();
+      $proPrice = (float) config('app.pro_price', 5000);
 
         if ($user->verified_id == 'yes') {
             return response()->json([
@@ -2623,14 +2624,14 @@ public function becomePro()
             ]);
         }
 
-        if ($user->wallet < 5000) {
+        if ($user->wallet < $proPrice) {
             return response()->json([
                 'success' => false,
-                'message' => 'Saldo insuficiente para ativar o plano Pro. Você tem ' . number_format($user->wallet, 2) . ' KZ disponíveis.'
+                'message' => 'Saldo insuficiente para ativar o plano Pro. Você tem ' . number_format($user->wallet, 2) . ' ' . ($this->settings->currency_code ?? 'KZ') . ' disponíveis.'
             ]);
         }
 
-        $user->wallet -= 5000;
+        $user->wallet -= $proPrice;
         $user->activatePro(31);
         $user->save();
 

@@ -37,7 +37,7 @@
                         </span>
 
                         <strong>
-                            5.000 {{ $settings->currency_symbol }}
+                            {{ Helper::amountFormatDecimal(config('app.pro_price', 5000)) }} {{ $settings->currency_symbol }}
                         </strong>
                     </div>
                 </div>
