@@ -2603,5 +2603,48 @@ public function highlightProfile()
         ], 500);
     }
 }
+
+public function becomePro()
+{
+    try {
+        $user = auth()->user();
+
+        if ($user->verified_id == 'yes') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuários verificados não podem ativar esta opção.'
+            ]);
+        }
+
+        if ($user->isPro()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Seu plano Pro já está ativo.'
+            ]);
+        }
+
+        if ($user->wallet < 5000) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Saldo insuficiente para ativar o plano Pro. Você tem ' . number_format($user->wallet, 2) . ' KZ disponíveis.'
+            ]);
+        }
+
+        $user->wallet -= 5000;
+        $user->activatePro(31);
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Você agora é Pro por 31 dias!'
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Become Pro Error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Erro interno. Tente novamente.'
+        ], 500);
+    }
+}
 	
 }

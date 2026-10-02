@@ -41,6 +41,9 @@ class User extends Authenticatable implements HasLocalePreference
     'ip',
     'language',
     'free_subscription',
+    'is_pro',
+    'pro_started_at',
+    'pro_expires_at',
     'stripe_connect_id',
     'completed_stripe_onboarding',
 	  'content_type',
@@ -77,6 +80,9 @@ class User extends Authenticatable implements HasLocalePreference
 
   protected $casts = [
     'last_seen' => 'datetime:Y-m-d',
+    'is_pro' => 'boolean',
+    'pro_started_at' => 'datetime',
+    'pro_expires_at' => 'datetime',
   ];
 
   /**
@@ -578,6 +584,51 @@ public function feed(?int $skip = null)
   public function planActive()
   {
     return $this->plans()->whereStatus('1')->first();
+  }
+
+  public function isPro()
+  {
+    if (! $this->is_pro) {
+      return false;
+    }
+
+    if (! $this->pro_expires_at) {
+      return false;
+    }
+
+    if ($this->pro_expires_at->isPast()) {
+      $this->update([
+        'is_pro' => false,
+        'pro_started_at' => null,
+        'pro_expires_at' => null,
+      ]);
+
+      return false;
+    }
+
+    return true;
+  }
+
+  public function activatePro($days = 31)
+  {
+    $this->update([
+      'is_pro' => true,
+      'pro_started_at' => now(),
+      'pro_expires_at' => now()->addDays($days),
+    ]);
+
+    return $this;
+  }
+
+  public function deactivatePro()
+  {
+    $this->update([
+      'is_pro' => false,
+      'pro_started_at' => null,
+      'pro_expires_at' => null,
+    ]);
+
+    return $this;
   }
 
   public function purchasedItems()

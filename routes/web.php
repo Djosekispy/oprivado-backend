@@ -296,6 +296,7 @@ Route::get('verify/account/{confirmation_code}', [HomeController::class, 'getVer
   	Route::post('settings/page', [UserController::class, 'updateSettingsPage']);
 	
 	 Route::post('/highlight-profile', [UserController::class, 'highlightProfile']);
+	 Route::post('/become-pro', [UserController::class, 'becomePro']);
 
 	 // Top Users
 	Route::get('/top', [TopUsersController::class, 'topEarners'])->name('top.earners');

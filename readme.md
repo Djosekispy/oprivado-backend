@@ -19,3 +19,7 @@ Foram ajustados estes arquivos:
 
 * Adicionar uma nova opção ao lado da funcionalidade de "Destacar" no perfil do usuário, chamada "Tornar-se Pro".
  
+ ## Links de Acesso
+  -  https://84.247.172.14:8443/
+  - Username : admin
+  - Passoword : @;Vicente1998
