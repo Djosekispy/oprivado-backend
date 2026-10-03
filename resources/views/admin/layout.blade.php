@@ -185,6 +185,11 @@
                       <i class="bi-people me-2"></i> {{ __('admin.members') }}
                   </a>
               </li><!-- /end list -->
+              <li class="nav-item">
+                  <a href="{{ url('panel/admin/pro-users') }}" class="nav-link text-truncate @if (request()->is('panel/admin/pro-users')) active @endif">
+                      <i class="bi-star-fill me-2"></i> Utilizadores Pro
+                  </a>
+              </li><!-- /end list -->
               @endif
               @if (auth()->user()->hasPermission('top_users'))
               <li class="nav-item">

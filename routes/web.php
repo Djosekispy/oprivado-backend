@@ -670,6 +670,7 @@ Route::group(['middleware' => 'private.content'], function() {
 	    Route::post('/withdrawals/reject/{id}', [AdminController::class, 'withdrawalsReject']);
 		// Subscriptions
 		Route::get('/subscriptions', [AdminController::class, 'subscriptions'])->name('subscriptions');
+		Route::get('/pro-users', [AdminController::class, 'proUsers'])->name('pro-users');
 	
 		// Transactions
 		Route::get('/transactions', [AdminController::class, 'transactions'])->name('transactions');

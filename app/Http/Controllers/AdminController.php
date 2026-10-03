@@ -492,6 +492,80 @@ class AdminController extends Controller
 		return view('admin.subscriptions', ['data' => $data]);
 	}
 
+	public function proUsers(Request $request)
+	{
+		if (!auth()->user()->hasPermission('members')) {
+			return view('admin.unauthorized');
+		}
+
+		$now = Carbon::now();
+		$baseQuery = User::query()
+			->where('is_pro', true)
+			->whereNotNull('pro_expires_at');
+
+		$activeCount = (clone $baseQuery)->where('pro_expires_at', '>', $now)->count();
+		$expiringCount = (clone $baseQuery)
+			->where('pro_expires_at', '>', $now)
+			->where('pro_expires_at', '<=', $now->copy()->addDays(7))
+			->count();
+		$expiredCount = (clone $baseQuery)->where('pro_expires_at', '<=', $now)->count();
+
+		$status = in_array($request->input('status'), ['active', 'expired', 'all'], true)
+			? $request->input('status')
+			: 'active';
+		$expires = in_array($request->input('expires'), ['7', '30'], true)
+			? $request->input('expires')
+			: '';
+		$sort = in_array($request->input('sort'), ['expiry_desc', 'started_desc', 'name_asc'], true)
+			? $request->input('sort')
+			: 'expiry_asc';
+		$search = trim((string) $request->input('q', ''));
+
+		$query = clone $baseQuery;
+
+		if ($status === 'active') {
+			$query->where('pro_expires_at', '>', $now);
+		} elseif ($status === 'expired') {
+			$query->where('pro_expires_at', '<=', $now);
+		}
+
+		if ($expires !== '') {
+			$query->where('pro_expires_at', '>', $now)
+				->where('pro_expires_at', '<=', $now->copy()->addDays((int) $expires));
+		}
+
+		if ($search !== '') {
+			$query->where(function ($builder) use ($search) {
+				$builder->where('name', 'LIKE', '%' . $search . '%')
+					->orWhere('username', 'LIKE', '%' . $search . '%')
+					->orWhere('email', 'LIKE', '%' . $search . '%');
+			});
+		}
+
+		if ($sort === 'expiry_desc') {
+			$query->orderBy('pro_expires_at', 'DESC');
+		} elseif ($sort === 'started_desc') {
+			$query->orderBy('pro_started_at', 'DESC');
+		} elseif ($sort === 'name_asc') {
+			$query->orderBy('name', 'ASC');
+		} else {
+			$query->orderBy('pro_expires_at', 'ASC');
+		}
+
+		$data = $query->paginate(25)->appends($request->query());
+
+		return view('admin.pro-users', compact(
+			'data',
+			'activeCount',
+			'expiringCount',
+			'expiredCount',
+			'status',
+			'expires',
+			'sort',
+			'search'
+		));
+	}
+
 	public function transactions(Request $request)
 	{
 		$query = $request->input('q');
