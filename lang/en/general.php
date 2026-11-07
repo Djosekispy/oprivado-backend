@@ -852,6 +852,8 @@ return array(
 'has_changed_subscription_free' => 'alterou a sua subscrição para gratuita, para cancelar a sua subscrição atual clique no botão abaixo.',
 'has_changed_subscription_paid' => 'alterou a sua subscrição para paga',
 'subscribe_now' => 'Subscreva agora!',
+'pro_expired_notification' => 'O seu plano Pro expirou. Renove ou atualize o seu plano para continuar a aproveitar os benefícios.',
+'renew_pro_plan' => 'Tornar-se Pro',
 
 // Versão 2.9
 'live' => 'Ao Vivo',

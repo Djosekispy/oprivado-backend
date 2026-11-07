@@ -830,6 +830,8 @@ return array(
 	'has_changed_subscription_free' => 'ha cambiado su suscripción a gratuita, para cancelar tu actual suscripción haz clic en el siguiente botón.',
 	'has_changed_subscription_paid' => 'ha cambiado su suscripción a paga',
 	'subscribe_now' => '¡Suscríbase ahora!',
+	'pro_expired_notification' => 'Tu plan Pro ha expirado. Renueva o actualiza tu plan para seguir disfrutando de sus beneficios.',
+	'renew_pro_plan' => 'Hazte Pro',
 
 	// Version 2.9
 	'live' => 'Vivo',

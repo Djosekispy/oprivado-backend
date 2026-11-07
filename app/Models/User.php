@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Notifications;
 use Laravel\Cashier\Billable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use App\Notifications\ResetPassword as ResetPasswordNotification;
@@ -597,16 +598,47 @@ public function feed(?int $skip = null)
     }
 
     if ($this->pro_expires_at->isPast()) {
-      $this->update([
+      $this->expirePro();
+      return false;
+    }
+
+    return true;
+  }
+
+  public function expirePro(): bool
+  {
+    if (! $this->is_pro || ! $this->pro_expires_at || $this->pro_expires_at->isFuture()) {
+      return false;
+    }
+
+    $expired = DB::transaction(function () {
+      $user = static::whereKey($this->getKey())
+        ->where('is_pro', true)
+        ->whereNotNull('pro_expires_at')
+        ->where('pro_expires_at', '<=', now())
+        ->lockForUpdate()
+        ->first();
+
+      if (! $user) {
+        return false;
+      }
+
+      Notifications::send($user->id, $user->id, 27, 0);
+
+      $user->update([
         'is_pro' => false,
         'pro_started_at' => null,
         'pro_expires_at' => null,
       ]);
 
-      return false;
+      return true;
+    });
+
+    if ($expired) {
+      $this->refresh();
     }
 
-    return true;
+    return $expired;
   }
 
   public function activatePro($days = 31)

@@ -21,10 +21,10 @@ class ExpireProUsers
             ->where('is_pro', true)
             ->whereNotNull('pro_expires_at')
             ->where('pro_expires_at', '<=', now())
-            ->update([
-                'is_pro' => false,
-                'pro_started_at' => null,
-                'pro_expires_at' => null,
-            ]);
+            ->chunkById(100, function ($users) {
+                foreach ($users as $user) {
+                    $user->expirePro();
+                }
+            });
     }
 }

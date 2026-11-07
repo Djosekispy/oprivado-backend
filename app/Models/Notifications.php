@@ -169,6 +169,11 @@ class Notifications extends Model
 					$msg             = $authorName . ' ' . __('general.has_sent_you_gift');
 					$linkDestination = url('my/payments/received');
 					break;
+
+				case 27:
+					$msg             = __('general.pro_expired_notification');
+					$linkDestination = url($user->username);
+					break;
 			}
 
 			try {
