@@ -103,6 +103,8 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'report_recipient' => env('REPORT_NOTIFICATION_EMAIL'),
+
     /*
     |--------------------------------------------------------------------------
     | Markdown Mail Settings

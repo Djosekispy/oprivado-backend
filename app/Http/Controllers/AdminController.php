@@ -1163,7 +1163,9 @@ public function withdrawalsReject(Request $request)
 
 	public function reports()
 	{
-		$data = Reports::orderBy('id', 'desc')->get();
+		$data = Reports::with(['user', 'userReported', 'updates.creator', 'products.seller', 'live'])
+			->orderBy('id', 'desc')
+			->get();
 		return view('admin.reports')->withData($data);
 	}
 

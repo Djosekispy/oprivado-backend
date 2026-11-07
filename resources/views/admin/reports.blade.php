@@ -45,33 +45,57 @@
                  @foreach ($data as $report)
 					<tr>
 						<td>{{ $report->id }}</td>
-						<td><a href="{{ url($report->user()->username) }}" target="_blank">{{ $report->user()->name }} <i class="fa fa-external-link-square-alt"></i></a></td>
+						<td>
+							@if ($report->user)
+								<a href="{{ url($report->user->username) }}" target="_blank">{{ $report->user->name }} <i class="fa fa-external-link-square-alt"></i></a>
+							@else
+								<span class="text-muted">{{ __('general.user_unavailable') }} (#{{ $report->user_id }})</span>
+							@endif
+						</td>
 
 						<td>
 							@switch($report->type)
 								@case('user')
-									<a href="{{ url('panel/admin/members/edit', $report->report_id) }}" target="_blank">
-										{{ str_limit($report->userReported()->name, 15, '...') }} <i class="fa fa-external-link-square-alt"></i>
-									</a>
+									@if ($report->userReported)
+										<a href="{{ url('panel/admin/members/edit', $report->report_id) }}" target="_blank">
+											{{ str_limit($report->userReported->name, 15, '...') }} <i class="fa fa-external-link-square-alt"></i>
+										</a>
+									@else
+										<span class="text-muted">{{ __('general.user_unavailable') }} (#{{ $report->report_id }})</span>
+									@endif
 									@break
 
 								@case('update')
-									<a href="{{ url($report->updates()->user()->username.'/post', $report->report_id) }}" target="_blank">
-										{{ str_limit($report->updates()->description, 40, '...') }} <i class="fa fa-external-link-square-alt"></i>
-									</a>
+									@if ($report->updates && $report->updates->creator)
+										<a href="{{ url($report->updates->creator->username.'/post', $report->report_id) }}" target="_blank">
+											{{ str_limit($report->updates->description, 40, '...') }} <i class="fa fa-external-link-square-alt"></i>
+										</a>
+									@else
+										<span class="text-muted">{{ __('general.no_available') }} (#{{ $report->report_id }})</span>
+									@endif
 									@break
 							
 								@case('item')
-									<a href="{{ url('shop/product', $report->report_id) }}" target="_blank">
-										{{ str_limit($report->products()->name, 40, '...') }} <i class="fa fa-external-link-square-alt"></i>
-									</a>
+									@if ($report->products)
+										<a href="{{ url('shop/product', $report->report_id) }}" target="_blank">
+											{{ str_limit($report->products->name, 40, '...') }} <i class="fa fa-external-link-square-alt"></i>
+										</a>
+									@else
+										<span class="text-muted">{{ __('general.no_available') }} (#{{ $report->report_id }})</span>
+									@endif
 									@break
 
 								@case('live')
-									<a href="{{ url('live', $report->live()->username) }}" target="_blank">
-										{{ str_limit($report->live()->name, 40, '...') }} <i class="fa fa-external-link-square-alt"></i>
-									</a>
+									@if ($report->live)
+										<a href="{{ url('live', $report->live->username) }}" target="_blank">
+											{{ str_limit($report->live->name, 40, '...') }} <i class="fa fa-external-link-square-alt"></i>
+										</a>
+									@else
+										<span class="text-muted">{{ __('general.user_unavailable') }} (#{{ $report->report_id }})</span>
+									@endif
 									@break								
+								@default
+									<span class="text-muted">{{ __('general.no_available') }} (#{{ $report->report_id }})</span>
 						@endswitch
 					</td>
 
@@ -98,8 +122,9 @@
 					<td>
 						{{ $report->message ?? '--' }}
 					</td>
-
+					
 					@php
+						$reason = $report->reason ?? '--';
 						switch ($report->reason) {
 							case 'copyright':
 								$reason = __('admin.copyright');
