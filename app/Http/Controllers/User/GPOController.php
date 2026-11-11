@@ -160,9 +160,19 @@ class GPOController extends Controller
 
     private function getAuthToken()
     {
-               $curl = curl_init();
+        $clientId = env('APPYPAY_CLIENT_ID');
+        $clientSecret = env('APPYPAY_CLIENT_SECRET');
+        $resource = env('APPYPAY_RESOURCE');
+
+        if (!$clientId || !$clientSecret || !$resource) {
+            return [
+                'error' => 'Credenciais do provedor não configuradas.',
+            ];
+        }
+
+        $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://login.microsoftonline.com/auth.appypay.co.ao/oauth2/token',
+            CURLOPT_URL => env('APPYPAY_TOKEN_URL', 'https://login.microsoftonline.com/auth.appypay.co.ao/oauth2/token'),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -170,53 +180,59 @@ class GPOController extends Controller
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS =>  [
+            CURLOPT_POSTFIELDS => [
                 'grant_type' => 'client_credentials',
-                'client_id' => env('APPYPAY_CLIENT_ID', '48fdb463-035a-40a0-be28-98f362b64f54'),
-                'client_secret' => env('APPYPAY_CLIENT_SECRET'),
-                'resource' => env('APPYPAY_RESOURCE', 'bee57785-7a19-4f1c-9c8d-aa03f2f0e333')
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
+                'resource' => $resource,
             ],
             CURLOPT_HTTPHEADER => array(
                 "Accept-Language: pt-BR",
-                'Cookie: esctx=PAQABAAEAAAAtyolDObpQQ5VtlI4uGjEPJH5Nnjbs2RDvmOr5FccPFV4JeUy-r44mvoO_vlmlY2Uy3E347ZZFaxYb84oIf0vhqz1KaByGebYMniCbnToGv_luK_U3DVAal7Zu2LrQNVPplJIBUtMi1niqRz_HNyDrz4JcURvIFf3_4tQW4JJnLNMgomXw77WQyOm2rmO0nz0gAA; fpc=AvIEwPLobVtArlqpbdUSjhFON_WHBAAAAMRaUtwOAAAA; stsservicecookie=estsfd; x-ms-gateway-slice=estsfd'
             ),
         ));
-        
-    
+
         $response = curl_exec($curl);
         $error = curl_error($curl);
         curl_close($curl);
-        
-        if ($response != null) {
+
+        if ($response !== false && $response !== null && $response !== '') {
             return json_decode($response, true);
         }
-    
+
         return json_decode($error, true);
     }
 
     private function createCharge($token, $merchantTransactionId, $amountToPay, $phone)
     {
- 		$curl = curl_init();
-   		 curl_setopt_array($curl, [
-        CURLOPT_URL => "https://gwy-api.appypay.co.ao/v2.0/charges",
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => "",
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 90,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => "POST",
-        CURLOPT_POSTFIELDS => "{\n  \"currency\": \"AOA\",\n  \"amount\": " . $amountToPay . ",\n  \"paymentMethod\": \"GPO_8c234e59-03a1-4c2c-8ca6-0d834f1c1e2f\",\n  \"description\": \"Carregamento de carteira Oprivado\",\n  \"merchantTransactionId\": \"" . $merchantTransactionId . "\",\n  \"paymentInfo\": {\n    \"phoneNumber\": \"" . $phone . "\"\n  }\n}",
-        CURLOPT_HTTPHEADER => [
-            "Accept: application/json",
-            "Accept-Language: pt-BR",
-            "Authorization: Bearer " . $token,
-            "Content-Type: application/json"
-        ],
-    ]);
+        $apiBaseUrl = env('APPYPAY_API_URL', 'https://gwy-api.appypay.co.ao/v2.0');
+        $paymentMethod = env('APPYPAY_PAYMENT_METHOD_ID');
 
-   		 $response = curl_exec($curl);
-    		curl_close($curl);
-   		 $resp = json_decode($response);
-        return $resp ? json_decode($response) : null ;
+        if (!$paymentMethod) {
+            return null;
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $apiBaseUrl . '/charges',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 90,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => "{\n  \"currency\": \"AOA\",\n  \"amount\": " . $amountToPay . ",\n  \"paymentMethod\": \"" . $paymentMethod . "\",\n  \"description\": \"Carregamento de carteira Oprivado\",\n  \"merchantTransactionId\": \"" . $merchantTransactionId . "\",\n  \"paymentInfo\": {\n    \"phoneNumber\": \"" . $phone . "\"\n  }\n}",
+            CURLOPT_HTTPHEADER => [
+                "Accept: application/json",
+                "Accept-Language: pt-BR",
+                "Authorization: Bearer " . $token,
+                "Content-Type: application/json"
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        $resp = json_decode($response);
+        return $resp ? $resp : null;
     }
 }

@@ -157,10 +157,18 @@ class ReferenceController extends Controller
 
     private function getAuthToken()
     {
+        $clientId = env('APPYPAY_CLIENT_ID');
+        $clientSecret = env('APPYPAY_CLIENT_SECRET');
+        $resource = env('APPYPAY_RESOURCE');
+
+        if (!$clientId || !$clientSecret || !$resource) {
+            return ['error' => 'Credenciais do provedor não configuradas.'];
+        }
+
         $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => 'https://login.microsoftonline.com/auth.appypay.co.ao/oauth2/token',
+            CURLOPT_URL => env('APPYPAY_TOKEN_URL', 'https://login.microsoftonline.com/auth.appypay.co.ao/oauth2/token'),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -170,13 +178,12 @@ class ReferenceController extends Controller
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS => [
                 'grant_type' => 'client_credentials',
-                'client_id' => env('APPYPAY_CLIENT_ID', '48fdb463-035a-40a0-be28-98f362b64f54'),
-                'client_secret' => env('APPYPAY_CLIENT_SECRET'),
-                'resource' => env('APPYPAY_RESOURCE', 'bee57785-7a19-4f1c-9c8d-aa03f2f0e333')
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
+                'resource' => $resource,
             ],
             CURLOPT_HTTPHEADER => [
                 "Accept-Language: pt-BR",
-                'Cookie: esctx=PAQABAAEAAAAtyolDObpQQ5VtlI4uGjEPJH5Nnjbs2RDvmOr5FccPFV4JeUy-r44mvoO_vlmlY2Uy3E347ZZFaxYb84oIf0vhqz1KaByGebYMniCbnToGv_luK_U3DVAal7Zu2LrQNVPplJIBUtMi1niqRz_HNyDrz4JcURvIFf3_4tQW4JJnLNMgomXw77WQyOm2rmO0nz0gAA; fpc=AvIEwPLobVtArlqpbdUSjhFON_WHBAAAAMRaUtwOAAAA; stsservicecookie=estsfd; x-ms-gateway-slice=estsfd'
             ],
         ]);
 
@@ -184,7 +191,7 @@ class ReferenceController extends Controller
         $error = curl_error($curl);
         curl_close($curl);
 
-        if ($response != null) {
+        if ($response !== false && $response !== null && $response !== '') {
             return json_decode($response, true);
         }
 
@@ -192,92 +199,99 @@ class ReferenceController extends Controller
     }
 
     private function generateAppyPayPaymentReference($data)
-    {    $curl = curl_init();
+    {
+        $curl = curl_init();
 
-			$requiredFields = ['userId', 'amount', 'merchantTransactionId', 'referenceNumber', 'dueDate', 'accessToken'];
-			foreach ($requiredFields as $field) {
-				if (!isset($data[$field])) {
-					throw new InvalidArgumentException("O campo '$field' é obrigatório");
-				}
-			}
+        $requiredFields = ['userId', 'amount', 'merchantTransactionId', 'referenceNumber', 'dueDate', 'accessToken'];
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field])) {
+                throw new InvalidArgumentException("O campo '$field' é obrigatório");
+            }
+        }
 
-			$callbackParams = [
-				'userId' => $data['userId'],
-				'amount' => $data['amount'],
-				'merchantTransactionId' => $data['merchantTransactionId'],
-				'referenceNumber' => $data['referenceNumber'],
-			];
+        $callbackParams = [
+            'userId' => $data['userId'],
+            'amount' => $data['amount'],
+            'merchantTransactionId' => $data['merchantTransactionId'],
+            'referenceNumber' => $data['referenceNumber'],
+        ];
 
-			$payload = [
-				"amount" => (float) $data['amount'],
-				"currency" => "AOA",
-				//"paymentMethod" => "REF_4f9f1f41-a7ba-4dc7-bf6e-dbf32aa7c82f",
-				"paymentMethod" =>"REF_7AE70822-7FB8-43C0-BEA4-04ECC908E43B",
-				"description" => "Carregar carteira OPrivado",
-				"merchantTransactionId" => (string) $data['merchantTransactionId'],
-				"dueDate" => $data['dueDate'],
-				"paymentInfo" => [
-					"referenceNumber" => (string) $data['referenceNumber'],
-					"dueDate" => $data['dueDate']
-				],
-				"references" => [
-					[
-						"referenceNumber" => (string) $data['referenceNumber'],
-						"currency" => "AOA",
-						"dueDate" => $data['dueDate'],
-						"amounts" => [
-							[
-								"amount" => (float) $data['amount'],
-								"descriptionLine1" => "Carregar carteira OPrivado",
-								"descriptionLine2" => "Ref: " . $data['merchantTransactionId']
-							]
-						],
-						"minAmount" => (float) $data['amount'],
-						"maxAmount" => (float) $data['amount'],
-						"startDate" => Carbon::now()->toIso8601String(),
-						"expirationDate" => $data['dueDate'],
-						"entity" => "10007"
-					]
-				]
-				//"callback_url" => route("wallet.appypay_reference_webhook", $callbackParams, true)
-			];
+        $paymentMethod = env('APPYPAY_REFERENCE_PAYMENT_METHOD_ID');
+        $entity = env('APPYPAY_REFERENCE_ENTITY', '10007');
+        $apiUrl = env('APPYPAY_API_URL', 'https://gwy-api.appypay.co.ao/v2.0');
 
-			curl_setopt_array($curl, [
-				CURLOPT_URL => 'https://gwy-api.appypay.co.ao/v2.0/charges',
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_ENCODING => '',
-				CURLOPT_MAXREDIRS => 10,
-				CURLOPT_TIMEOUT => 30,
-				CURLOPT_FOLLOWLOCATION => true,
-				CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-				CURLOPT_CUSTOMREQUEST => 'POST',
-				CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_SLASHES),
-				CURLOPT_HTTPHEADER => [
-					"Accept: application/json",
-					"Accept-Language: pt-BR",
-					"Content-Type: application/json",
-					'Authorization: Bearer ' . $data['accessToken']
-				],
-				CURLOPT_HEADER => true
-			]);
+        if (!$paymentMethod) {
+            throw new InvalidArgumentException('APPYPAY_REFERENCE_PAYMENT_METHOD_ID não configurado.');
+        }
 
-			$response = curl_exec($curl);
-			$error = curl_error($curl);
-			$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $payload = [
+            "amount" => (float) $data['amount'],
+            "currency" => "AOA",
+            "paymentMethod" => $paymentMethod,
+            "description" => "Carregar carteira OPrivado",
+            "merchantTransactionId" => (string) $data['merchantTransactionId'],
+            "dueDate" => $data['dueDate'],
+            "paymentInfo" => [
+                "referenceNumber" => (string) $data['referenceNumber'],
+                "dueDate" => $data['dueDate']
+            ],
+            "references" => [
+                [
+                    "referenceNumber" => (string) $data['referenceNumber'],
+                    "currency" => "AOA",
+                    "dueDate" => $data['dueDate'],
+                    "amounts" => [
+                        [
+                            "amount" => (float) $data['amount'],
+                            "descriptionLine1" => "Carregar carteira OPrivado",
+                            "descriptionLine2" => "Ref: " . $data['merchantTransactionId']
+                        ]
+                    ],
+                    "minAmount" => (float) $data['amount'],
+                    "maxAmount" => (float) $data['amount'],
+                    "startDate" => Carbon::now()->toIso8601String(),
+                    "expirationDate" => $data['dueDate'],
+                    "entity" => $entity
+                ]
+            ]
+        ];
 
-			curl_close($curl);
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $apiUrl . '/charges',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_SLASHES),
+            CURLOPT_HTTPHEADER => [
+                "Accept: application/json",
+                "Accept-Language: pt-BR",
+                "Content-Type: application/json",
+                'Authorization: Bearer ' . $data['accessToken']
+            ],
+            CURLOPT_HEADER => true
+        ]);
 
-			if ($error) {
-				return ['error' => true, 'message' => $error];
-			}
+        $response = curl_exec($curl);
+        $error = curl_error($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-			$parts = explode("\r\n\r\n", $response, 2);
-			$body = isset($parts[1]) ? json_decode($parts[1], true) : null;
+        curl_close($curl);
 
-			return [
-				'status_code' => $httpCode,
-				'body' => $body,
-				'raw_response' => $response
-			];
+        if ($error) {
+            return ['error' => true, 'message' => $error];
+        }
+
+        $parts = explode("\r\n\r\n", $response, 2);
+        $body = isset($parts[1]) ? json_decode($parts[1], true) : null;
+
+        return [
+            'status_code' => $httpCode,
+            'body' => $body,
+            'raw_response' => $response
+        ];
     }
 }
