@@ -899,6 +899,8 @@ Route::group(['middleware' => 'private.content'], function() {
 		Route::get('/advertising/edit/{ad}', [AdvertisingController::class, 'edit'])->name('advertising');
 		Route::post('/advertising/update/{id}', [AdvertisingController::class, 'update'])->name('advertising.update');
 		Route::post('/advertising/destroy/{ad}', [AdvertisingController::class, 'destroy'])->name('advertising.destroy');
+		Route::get('/promoted-posts', [PromotedPostController::class, 'adminIndex'])->name('admin.promoted-posts');
+		Route::post('/promoted-posts/{promotion}/remove', [PromotedPostController::class, 'adminRemove'])->name('admin.promoted-posts.remove');
 
 		// Live streaming private
 		Route::get('/live-streaming-private-requests', [AdminController::class, 'liveStreamingPrivateRequests'])->name('live_streaming_private_requests');
@@ -1015,6 +1017,7 @@ Route::any('webhook/story/coco/{mediaId}/{resourceId}', [WebhookCoconutControlle
 
 // Clicks Ads
 Route::get('click/ad/{ad}', [AdvertisingController::class, 'clicksAds'])->name('clicks');
+Route::get('promoted-post/{promotion}/click', [PromotedPostController::class, 'trackClick'])->name('promoted-post.click');
 
 Route::get('verify/squad', [AddFundsController::class, 'verifySquad'])->name('webhook.squad');
 

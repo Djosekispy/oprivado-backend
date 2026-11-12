@@ -204,6 +204,11 @@
                       <i class="bi-badge-ad me-2"></i> {{ __('general.advertising') }}
                   </a>
               </li><!-- /end list -->
+              <li class="nav-item">
+                  <a href="{{ route('admin.promoted-posts') }}" class="nav-link text-truncate @if (request()->is('panel/admin/promoted-posts')) active @endif">
+                      <i class="bi-megaphone me-2"></i> Promoções de publicações
+                  </a>
+              </li><!-- /end list -->
               @endif
 
               @if (auth()->user()->hasPermission('gifts'))

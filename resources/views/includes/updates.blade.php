@@ -36,7 +36,10 @@
 				$checkPayPerView = auth()->user()->payPerView()->where('updates_id', $response->id)->first();
 			}
 		$activePromotion = $response->activePromotion()->first();
-		$creatorLive = Helper::isCreatorLive($getCurrentLiveCreators , $response->creator->id);
+			$servedPromotion = $response->relationLoaded('servedPromotion')
+				? $response->getRelation('servedPromotion')
+				: null;
+			$creatorLive = Helper::isCreatorLive($getCurrentLiveCreators , $response->creator->id);
 
 		$totalLikes = number_format($response->likes->count());
 		$totalComments = $response->totalComments();
@@ -83,10 +86,10 @@
 			<i class="bi bi-pin mr-2"></i> {{ __('general.pinned_post') }}
 		</div>
 
-		@if ($activePromotion)
-			<div class="text-muted mb-2" style="font-size: 12px;">
-				<i class="bi bi-globe mr-1"></i> Patrocinado
-			</div>
+		@if ($servedPromotion)
+			<a href="{{ route('promoted-post.click', $servedPromotion->id) }}" class="text-muted d-inline-block mb-2" style="font-size: 12px;">
+				<i class="bi bi-globe mr-1"></i> Patrocinado · Ver publicação
+			</a>
 		@endif
 
 		
