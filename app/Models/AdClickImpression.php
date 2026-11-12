@@ -16,6 +16,16 @@ class AdClickImpression extends Model
         // The legacy event table has no foreign key; the event prefix separates campaign IDs from ad IDs.
         $type = 'promotion_' . $event;
 
+        if ($event === 'click') {
+            static::create([
+                'advertisings_id' => $campaignId,
+                'type' => $type,
+                'ip' => $ip,
+            ]);
+
+            return true;
+        }
+
         $recentEvent = static::where('advertisings_id', $campaignId)
             ->where('type', $type)
             ->where('ip', $ip)

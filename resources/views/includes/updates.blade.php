@@ -1,4 +1,9 @@
  @foreach ($updates as $response)
+
+	@if ($response->relationLoaded('servedPromotion') && $response->getRelation('servedPromotion'))
+		@include('includes.promoted-post', ['promotion' => $response->getRelation('servedPromotion')])
+		@continue
+	@endif
 		
 @php
     $isAdultContent = false;
@@ -36,10 +41,7 @@
 				$checkPayPerView = auth()->user()->payPerView()->where('updates_id', $response->id)->first();
 			}
 		$activePromotion = $response->activePromotion()->first();
-			$servedPromotion = $response->relationLoaded('servedPromotion')
-				? $response->getRelation('servedPromotion')
-				: null;
-			$creatorLive = Helper::isCreatorLive($getCurrentLiveCreators , $response->creator->id);
+				$creatorLive = Helper::isCreatorLive($getCurrentLiveCreators , $response->creator->id);
 
 		$totalLikes = number_format($response->likes->count());
 		$totalComments = $response->totalComments();
@@ -85,12 +87,6 @@
 		<div class="pinned_post text-muted small w-100 mb-2 {{ $response->fixed_post == '1' && request()->path() == $response->creator->username || auth()->check() && $response->fixed_post == '1' && $response->creator->id == auth()->user()->id ? 'pinned-current' : 'display-none' }}">
 			<i class="bi bi-pin mr-2"></i> {{ __('general.pinned_post') }}
 		</div>
-
-		@if ($servedPromotion)
-			<a href="{{ route('promoted-post.click', $servedPromotion->id) }}" class="text-muted d-inline-block mb-2" style="font-size: 12px;">
-				<i class="bi bi-globe mr-1"></i> Patrocinado · Ver publicação
-			</a>
-		@endif
 
 		
 		@if ($response->status == 'pending')
