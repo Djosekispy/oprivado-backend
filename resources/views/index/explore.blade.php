@@ -203,7 +203,8 @@ document.addEventListener('click', (e) => {
     let noMorePromotions = false;
 
     function randomInterval() {
-        return Math.floor(Math.random() * 4) + 4;
+        const intervals = [4, 6, 8];
+        return intervals[Math.floor(Math.random() * intervals.length)];
     }
 
     function recordImpression(card) {
