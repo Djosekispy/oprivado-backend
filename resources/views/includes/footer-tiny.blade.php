@@ -53,7 +53,7 @@
 		
       <li class="list-inline-item"><a class="link-footer footer-tiny" href="{{ url('blog') }}">{{ trans('general.blog') }}</a></li>
  
-    <li style="display:none!important;" class="list-inline-item">
+    <li class="list-inline-item">
       <div id="installContainer" class="display-none">
         <a class="link-footer footer-tiny" id="butInstall" href="javascript:void(0);">
           <i class="bi-phone"></i> {{ __('general.install_web_app') }}
@@ -62,7 +62,7 @@
     </li>
     </ul>
 	  <small class="text-muted">
-      &copy; 2021 - {{date('Y')}} {{$settings->title}}, <a target="_blank" href="https://orangeafrika.com/">ORANGE AFRIKA LTD.</a> 
+      &copy; 2021 - {{date('Y')}} {{$settings->title}}, <a style=" color: black!important; " target="_blank" href="https://orangeafrika.com/">ORANGE AFRIKA LTD.</a> 
 
       @if ($settings->show_address_company_footer)
           {{ $settings->company }} - {{ __('general.address') }}: {{ $settings->address }} {{ $settings->city }} {{ $settings->country }}

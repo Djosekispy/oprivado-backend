@@ -81,7 +81,7 @@
 
 						@if (auth()->user()->verified_id == 'yes') <a href="{{url('my/promotions')}}" class="list-group-item list-group-item-action d-flex justify-content-between @if (request()->is('my/promotions')) active @endif">
 						  <div>
-								 <img class="mr-2" width="22" heigth="22" style="margin-bottom:5px!important;" src="/public/img/ads.svg">
+								 <img class="mr-2" width="20" heigth="20" style="margin-bottom:5px!important;" src="/public/svg/promotions.svg">
 								  <span>Promoções</span>
 						  </div>
 						  <div>

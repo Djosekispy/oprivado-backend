@@ -108,13 +108,15 @@
 
           <div class="media-body">
             <h4 style="font-size:16px;" class="mt-2">
-              {{$user->hide_name == 'yes' ? $user->username : $user->name}}
+              {{$user->hide_name == 'yes' ? $user->username : $user->name}} @if ($user->is_pro == '1')
+               <i style="font-size: 12px;color: #fd7350;" class="bi-star-fill mr-1"></i>
+              @endif
               @if ($user->verified_id == 'yes')
               <small class="verified" title="{{__('general.verified_account')}}" data-toggle="tooltip" data-placement="top">
                 <i class="bi-patch-check-fill"></i> @if ($user->featured == 'yes')
                <i class="feather icon-award"></i>
               @endif
-              </small>
+              </small> 
 				<br><small style=" color: #969696 !important; " class="text-muted font-14">{{ '@' . trim($user->username) }}</small>
             @endif
           </h4>
@@ -323,16 +325,16 @@
 					 
 @if (auth()->check() && auth()->id() == $user->id && $user->verified_id != 'yes')
     @if ($user->isPro())
-        <button class="btn btn-success btn-profile mr-1" disabled>
-            Você é Pro
+        <button class="btn btn-primary btn-profile mr-1" disabled>
+            Você já é Pro <i style="font-size: 10px;color: #fff;" class="bi-star-fill mr-1"></i>
         </button>
     @else
         <button type="button"
-                class="btn btn-warning btn-profile mr-1"
+                class="btn btn-google btn-profile mr-1"
                 data-toggle="modal"
                 data-target="#becomeProModal"
                 title="Tornar-se Pro por 31 dias">
-            Tornar-se Pro
+            Tornar-se Pro <i style="font-size: 11px;color: #fd7350;" class="bi-star-fill mr-1"></i>
         </button>
     @endif
 @endif

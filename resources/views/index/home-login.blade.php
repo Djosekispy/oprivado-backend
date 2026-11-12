@@ -7,12 +7,13 @@
 {
   "@context" : "http://schema.org",
   "@type" : "WebSite",
-  "name" : "Oprivado Angola",
+  "name" : "Oprivado",
  "url" : "https://oprivado.ao",
  "description": "Oprivado é a plataforma de conteúdo exclusivo em Angola. Crie seu perfil para monetizar fotos e vídeos ou assine para ter acesso a conteúdo único!",
  "sameAs" : [
-   "https://www.facebook.com/oprivado.ao/",
-   "https://www.instagram.com/oprivado.ao/"
+   "https://www.facebook.com/oprivado.ao",
+   "https://www.tiktok.com/oprivado.ao",
+   "https://www.instagram.com/seja_oprivado"
    ]
 }
 </script>
@@ -36,8 +37,8 @@
 				          <div class="text-center d-block w-100">
             <img src="/public/img/logotipo.svg" alt="Oprivado Angola" width="160px" class="logo align-baseline mb-2" />
           </div>
-<p style="color:black;font-size: 14px;font-weight: 400;" class="text-center pc">A maior rede social de conteúdos exclusivos em Angola</p>
-				<p style="color:black;font-size: 14px;font-weight: 400;" class="text-center phone">Conecta-te na maior rede social de conteúdos exclusivos em Angola</p>
+<p style="color:black;font-size: 14px;font-weight: 400;" class="text-center pc">A maior plataforma de conteúdos exclusivos em Angola</p>
+				<p style="color:black;font-size: 14px;font-weight: 400;" class="text-center phone">Conecta-te na maior plataforma de conteúdos exclusivos em Angola</p>
 
         @if (session('login_required'))
     			<div class="alert alert-danger" id="dangerAlert">

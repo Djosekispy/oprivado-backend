@@ -4,7 +4,22 @@
 
 @section('content')
 
-@section('metada')
+@section('brother')
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "WebSite",
+  "name" : "Oprivado",
+ "url" : "https://oprivado.ao",
+ "description": "Oprivado é a plataforma de conteúdo exclusivo em Angola. Crie seu perfil para monetizar fotos e vídeos ou assine para ter acesso a conteúdo único!",
+ "sameAs" : [
+   "https://www.facebook.com/oprivado.ao",
+   "https://www.tiktok.com/oprivado.ao",
+   "https://www.instagram.com/seja_oprivado"
+   ]
+}
+</script>
+
 <meta property="og:image" content="https://oprivado.ao/public/img/profile.png" />
 @endsection
 
@@ -76,12 +91,22 @@
           @include('includes.modal-add-story')
         @endif
 			
-			 @if (auth()->user()->verified_id != 'yes') <a class="text-decoration-none" href="{{ url('settings/verify/account') }}"> <div style="border-radius: 4px;" class="p-3 mb-4 border container-phone"> <div class="become-creator__row">
+			 @if (auth()->user()->verified_id != 'yes' && auth()->user()->verified_id != 'reject') <a class="text-decoration-none" href="{{ url('settings/verify/account') }}"> <div style="border-radius: 4px;" class="p-3 mb-4 border container-phone"> <div class="become-creator__row">
                                                     <img src="{{Helper::getFile(config('path.avatar').auth()->user()->avatar)}}" width="40" height="40" class="rounded-circle me-3 mr-2" alt="">
                                                     <div style="margin-left: 4px;">
                                                         <div style="font-weight: 500;" class="fw-bold text-black">
                                                              <span>Torne-se criador<i class="bi bi-patch-check text-primary ml-1"></i></span></div>
                                                         <small class="text-muted"> para começar a postar e ganhar</small>
+                                                    </div>
+				<span style="margin-left: auto;" class="become-creator__cta" aria-hidden="true"><svg class="svg-inline--fa fa-arrow-right" aria-hidden="true" focusable="false" data-prefix="fal" data-icon="arrow-right" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path class="" fill="currentColor" d="M443.3 267.3c6.2-6.2 6.2-16.4 0-22.6l-176-176c-6.2-6.2-16.4-6.2-22.6 0s-6.2 16.4 0 22.6L393.4 240 16 240c-8.8 0-16 7.2-16 16s7.2 16 16 16l377.4 0L244.7 420.7c-6.2 6.2-6.2 16.4 0 22.6s16.4 6.2 22.6 0l176-176z"></path></svg></span>
+           </div> </div> </a> @endif
+			
+			@if (auth()->user()->verified_id == 'reject') <a class="text-decoration-none" href="{{ url(auth()->user()->username) }}"> <div style="border-radius: 4px;" class="p-3 mb-4 border container-phone"> <div class="become-creator__row">
+                                                    <img src="{{Helper::getFile(config('path.avatar').auth()->user()->avatar)}}" width="40" height="40" class="rounded-circle me-3 mr-2" alt="">
+                                                    <div style="margin-left: 4px;">
+                                                        <div style="font-weight: 500;" class="fw-bold text-black">
+                                                             <span>Torne-se Pro<i class="bi-star-fill text-primary ml-1"></i></span></div>
+                                                        <small class="text-muted"> para enviar mensagens e comentar</small>
                                                     </div>
 				<span style="margin-left: auto;" class="become-creator__cta" aria-hidden="true"><svg class="svg-inline--fa fa-arrow-right" aria-hidden="true" focusable="false" data-prefix="fal" data-icon="arrow-right" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path class="" fill="currentColor" d="M443.3 267.3c6.2-6.2 6.2-16.4 0-22.6l-176-176c-6.2-6.2-16.4-6.2-22.6 0s-6.2 16.4 0 22.6L393.4 240 16 240c-8.8 0-16 7.2-16 16s7.2 16 16 16l377.4 0L244.7 420.7c-6.2 6.2-6.2 16.4 0 22.6s16.4 6.2 22.6 0l176-176z"></path></svg></span>
            </div> </div> </a> @endif

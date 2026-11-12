@@ -35,7 +35,6 @@
 				$checkUserSubscription = auth()->user()->checkSubscription($response->creator);
 				$checkPayPerView = auth()->user()->payPerView()->where('updates_id', $response->id)->first();
 			}
-
 		$activePromotion = $response->activePromotion()->first();
 		$creatorLive = Helper::isCreatorLive($getCurrentLiveCreators , $response->creator->id);
 
@@ -90,6 +89,7 @@
 			</div>
 		@endif
 
+		
 		@if ($response->status == 'pending')
 			<h6 class="text-muted w-100 mb-4">
 				<i class="bi bi-eye-fill mr-1"></i> <em>{{ __('general.post_pending_review') }}</em>
@@ -173,8 +173,8 @@
 					@endif
 
 					<button class="dropdown-item mb-1" onclick="$('#url{{$response->id}}').trigger('click')"><i class="feather icon-link mr-2"></i> {{__('general.copy_link')}}</button>
-
-					@if ($activePromotion)
+					
+						@if ($activePromotion)
 						{!! Form::open([
 							'method' => 'POST',
 							'url' => route('post.promote.remove', $activePromotion->id),
@@ -187,6 +187,7 @@
 							<i class="bi bi-megaphone mr-2"></i> Promover publicação
 						</button>
 					@endif
+
 
 					<a href="{{ route('post.edit', ['id' => $response->id]) }}" class="dropdown-item mb-1">
 						<i class="bi bi-pencil mr-2"></i> {{__('general.edit_post')}}
@@ -356,7 +357,7 @@
 	</div><!-- media -->
 </div><!-- card body -->
 
-@if (auth()->check() && auth()->user()->id == $response->creator->id)
+		@if (auth()->check() && auth()->user()->id == $response->creator->id)
 	<div class="modal fade" id="promotePostModal-{{$response->id}}" tabindex="-1" role="dialog" aria-hidden="true">
 		<div class="modal-dialog modal-sm" role="document">
 			<div class="modal-content">
@@ -386,7 +387,7 @@
 		</div>
 	</div>
 @endif
-
+		
 @if (auth()->check() && auth()->user()->id == $response->creator->id
 	|| $response->locked == 'yes' && $mediaCount != 0
 
@@ -652,12 +653,16 @@
 			<span class="@auth @if (auth()->user()->checkRestriction($response->creator->id) || !$response->creator->allow_comments) buttonDisabled @else text-muted @endif @else text-muted @endauth disabled mr-14px @auth @if (! isset($inPostDetail) && $buttonLike) pulse-btn toggleComments @endif @endauth">
 				<i class="feather icon-message-circle"></i>
 			</span>
-
-			@if (auth()->check() && auth()->user()->id == $response->creator->id && ! $activePromotion)
+		
+			@if (auth()->check() && auth()->user()->role == 'admin')
+		
+		@if (auth()->check() && auth()->user()->id == $response->creator->id && ! $activePromotion)
 				<button type="button" class="btn btn-outline-primary btn-sm ml-3 d-inline-flex align-items-center" data-toggle="modal" data-target="#promotePostModal-{{$response->id}}">
 					<i class="bi bi-megaphone mr-2"></i> Promover Publicação
 				</button>
 			@endif
+		
+		@endif
 
 	@auth
 		@if (auth()->user()->id != $response->creator->id
@@ -798,7 +803,7 @@
 	
 		<p style="font-size: 11px;margin-bottom: 3px;" class="text-center"><i class="feather icon-alert-circle"></i> Ao comentar, trate as pessoas com respeito</p><div class="media position-relative pt-3 border-top">
 			<div @class(['blocked', 'display-none' => $response->creator->allow_comments])></div>
-			<span href="#" @class(['float-left', 'd-none' => !$response->creator->allow_comments || auth()->user()->wallet <= 10 && auth()->user()->verified_id !== 'yes' ])>
+			<span href="#" @class(['float-left', 'd-none' => !$response->creator->allow_comments || auth()->user()->is_pro == '0' && auth()->user()->verified_id !== 'yes' ])>
 				<img src="{{ Helper::getFile(config('path.avatar').auth()->user()->avatar) }}" class="rounded-circle mr-1 avatarUser" width="40">
 			</span>
 			<div class="media-body">
@@ -810,17 +815,17 @@
     </div>
 
 @elseif (
-    auth()->user()->wallet <= 10 &&
+    auth()->user()->is_pro == '0' &&
     auth()->user()->verified_id !== 'yes'
 )
 
     <div style="font-size:13px;" class="alert alert-primary">
-       <i class="fa fa-info-circle mr-1"></i>Tenha mínimo de saldo na sua carteira para poder comentar qualquer post.
+       <i class="fa fa-info-circle mr-1"></i>Deve se tornar <a href="{{ url(auth()->user()->username) }}">Pro <i style="font-size: 11px;color: #fd7350;" class="bi-star-fill mr-1"></i></a> para conseguir comentar.
     </div>
 
 @endif
 
-				<form action="{{url('comment/store')}}" method="post" @class(['comments-form', 'd-none' => !$response->creator->allow_comments || auth()->user()->wallet <= 10 && auth()->user()->verified_id !== 'yes'])>
+				<form action="{{url('comment/store')}}" method="post" @class(['comments-form', 'd-none' => !$response->creator->allow_comments || auth()->user()->is_pro == '0' && auth()->user()->verified_id !== 'yes'])>
 					@csrf
 					<input type="hidden" name="update_id" value="{{$response->id}}" />
 					<input class="isReply" type="hidden" name="isReply" value="" />
@@ -861,7 +866,7 @@
 
 @endforeach
 
-@if (session('promotion_success'))
+		@if (session('promotion_success'))
 	<script>
 		swal({
 			title: @json(__('general.thanks')),
@@ -882,7 +887,6 @@
 		});
 	</script>
 @endif
-
 
 
 @if (! isset($singlePost))
@@ -926,8 +930,10 @@ if (request()->ajax()) {
 @endif
 			
 @include('includes.sidebar-top-earners')
+		
+@include('includes.advertising')
 
-<script>
+		<script>
 document.addEventListener('input', function(event) {
 	if (!event.target.classList.contains('promo-days-input')) {
 		return;

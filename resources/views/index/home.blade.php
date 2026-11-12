@@ -2,7 +2,24 @@
 
 @section('content')
 
+@section('brother')
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "WebSite",
+  "name" : "Oprivado",
+ "url" : "https://oprivado.ao",
+ "description": "Oprivado é a plataforma de conteúdo exclusivo em Angola. Crie seu perfil para monetizar fotos e vídeos ou assine para ter acesso a conteúdo único!",
+ "sameAs" : [
+   "https://www.facebook.com/oprivado.ao",
+   "https://www.tiktok.com/oprivado.ao",
+   "https://www.instagram.com/seja_oprivado"
+   ]
+}
+</script>
+
 <meta property="og:image" content="https://oprivado.ao/public/img/profile.png" />
+@endsection
 
   <!-- jumbotron -->
   <div class="jumbotron homepage m-0 bg-gradient">
