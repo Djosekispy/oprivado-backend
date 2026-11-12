@@ -78,22 +78,16 @@
 								  <i class="feather icon-chevron-right"></i>
 						  </div>
 				  </a> @endif
-  				
 
-				  @if ($settings->story_status && auth()->user()->verified_id == 'yes')
-					
-				  <a href="{{url('my/stories')}}" class="list-group-item list-group-item-action d-flex justify-content-between @if (request()->is('my/stories')) active @endif">
+						@if (auth()->user()->verified_id == 'yes') <a href="{{url('my/promotions')}}" class="list-group-item list-group-item-action d-flex justify-content-between @if (request()->is('my/promotions')) active @endif">
 						  <div>
-								 <img class="mr-2" width="22" heigth="22" style="margin-bottom:5px!important;" src="/public/img/stories2.svg">
-								  <span>{{__('general.my_stories')}}</span>
+								 <img class="mr-2" width="22" heigth="22" style="margin-bottom:5px!important;" src="/public/img/ads.svg">
+								  <span>Promoções</span>
 						  </div>
 						  <div>
 								  <i class="feather icon-chevron-right"></i>
 						  </div>
-				  </a>
-					
-					
-			  @endif
+					  </a> @endif
 
 					<a href="{{url('settings/verify/account')}}" class="list-group-item list-group-item-action d-flex justify-content-between @if (request()->is('settings/verify/account')) active @endif">
 							<div>

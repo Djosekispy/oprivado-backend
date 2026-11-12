@@ -36,6 +36,7 @@
 				$checkPayPerView = auth()->user()->payPerView()->where('updates_id', $response->id)->first();
 			}
 
+		$activePromotion = $response->activePromotion()->first();
 		$creatorLive = Helper::isCreatorLive($getCurrentLiveCreators , $response->creator->id);
 
 		$totalLikes = number_format($response->likes->count());
@@ -82,6 +83,12 @@
 		<div class="pinned_post text-muted small w-100 mb-2 {{ $response->fixed_post == '1' && request()->path() == $response->creator->username || auth()->check() && $response->fixed_post == '1' && $response->creator->id == auth()->user()->id ? 'pinned-current' : 'display-none' }}">
 			<i class="bi bi-pin mr-2"></i> {{ __('general.pinned_post') }}
 		</div>
+
+		@if ($activePromotion)
+			<div class="text-muted mb-2" style="font-size: 12px;">
+				<i class="bi bi-globe mr-1"></i> Patrocinado
+			</div>
+		@endif
 
 		@if ($response->status == 'pending')
 			<h6 class="text-muted w-100 mb-4">
@@ -166,6 +173,20 @@
 					@endif
 
 					<button class="dropdown-item mb-1" onclick="$('#url{{$response->id}}').trigger('click')"><i class="feather icon-link mr-2"></i> {{__('general.copy_link')}}</button>
+
+					@if ($activePromotion)
+						{!! Form::open([
+							'method' => 'POST',
+							'url' => route('post.promote.remove', $activePromotion->id),
+							'class' => 'd-inline'
+						]) !!}
+						{!! Form::button('<i class="bi bi-x-circle mr-2"></i> Remover promoção', ['class' => 'dropdown-item mb-1 text-danger', 'onclick' => 'return confirm("Tem a certeza que deseja remover esta promoção?")']) !!}
+						{!! Form::close() !!}
+					@else
+						<button type="button" class="dropdown-item mb-1" data-toggle="modal" data-target="#promotePostModal-{{$response->id}}">
+							<i class="bi bi-megaphone mr-2"></i> Promover publicação
+						</button>
+					@endif
 
 					<a href="{{ route('post.edit', ['id' => $response->id]) }}" class="dropdown-item mb-1">
 						<i class="bi bi-pencil mr-2"></i> {{__('general.edit_post')}}
@@ -334,6 +355,37 @@
 		</div><!-- media body -->
 	</div><!-- media -->
 </div><!-- card body -->
+
+@if (auth()->check() && auth()->user()->id == $response->creator->id)
+	<div class="modal fade" id="promotePostModal-{{$response->id}}" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="modal-dialog modal-sm" role="document">
+			<div class="modal-content">
+				<form method="POST" action="{{ route('post.promote', $response->id) }}">
+					@csrf
+					<div class="modal-header">
+						<h5 class="modal-title">Promover publicação</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="text-muted mb-2">Custo diário: <strong>2.000 Kz</strong></div>
+						<label for="days-{{$response->id}}">Nº de dias</label>
+						<input id="days-{{$response->id}}" type="number" name="days" min="1" max="365" value="1" class="form-control promo-days-input" data-target="#promo-total-{{$response->id}}" data-wallet="{{ auth()->user()->wallet }}" data-daily-price="2000">
+						<div class="mt-3 font-weight-bold">Total: <span id="promo-total-{{$response->id}}">2.000 Kz</span></div>
+						<div class="alert alert-danger promo-insufficient-funds mt-3 mb-0 @if (auth()->user()->wallet >= 2000) d-none @endif" role="alert">
+							Saldo insuficiente, por favor carregue a carteira.
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancelar</button>
+						<button type="submit" class="btn btn-primary btn-sm promo-confirm-button" @if (auth()->user()->wallet < 2000) disabled @endif>Confirmar</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+@endif
 
 @if (auth()->check() && auth()->user()->id == $response->creator->id
 	|| $response->locked == 'yes' && $mediaCount != 0
@@ -601,6 +653,12 @@
 				<i class="feather icon-message-circle"></i>
 			</span>
 
+			@if (auth()->check() && auth()->user()->id == $response->creator->id && ! $activePromotion)
+				<button type="button" class="btn btn-outline-primary btn-sm ml-3 d-inline-flex align-items-center" data-toggle="modal" data-target="#promotePostModal-{{$response->id}}">
+					<i class="bi bi-megaphone mr-2"></i> Promover Publicação
+				</button>
+			@endif
+
 	@auth
 		@if (auth()->user()->id != $response->creator->id
 					&& $checkUserSubscription && $response->price == 0.00
@@ -803,6 +861,28 @@
 
 @endforeach
 
+@if (session('promotion_success'))
+	<script>
+		swal({
+			title: @json(__('general.thanks')),
+			text: @json(session('promotion_success')),
+			type: 'success',
+			confirmButtonText: @json(__('users.ok'))
+		});
+	</script>
+@endif
+
+@if (session('promotion_error') || $errors->has('days'))
+	<script>
+		swal({
+			title: @json(__('general.error_oops')),
+			text: @json(session('promotion_error') ?: $errors->first('days')),
+			type: 'error',
+			confirmButtonText: @json(__('users.ok'))
+		});
+	</script>
+@endif
+
 
 
 @if (! isset($singlePost))
@@ -846,4 +926,41 @@ if (request()->ajax()) {
 @endif
 			
 @include('includes.sidebar-top-earners')
+
+<script>
+document.addEventListener('input', function(event) {
+	if (!event.target.classList.contains('promo-days-input')) {
+		return;
+	}
+
+	const days = Number(event.target.value || 0);
+	const wallet = Number(event.target.dataset.wallet || 0);
+	const dailyPrice = Number(event.target.dataset.dailyPrice || 2000);
+	const total = days * dailyPrice;
+	const target = document.querySelector(event.target.dataset.target);
+	const form = event.target.closest('form');
+	const insufficientFunds = total > wallet;
+	const invalidDays = !Number.isInteger(days) || days < 1 || days > 365;
+
+	if (target) {
+		target.textContent = new Intl.NumberFormat('pt-AO', {
+			minimumFractionDigits: 0,
+			maximumFractionDigits: 0
+		}).format(total) + ' Kz';
+	}
+
+	if (form) {
+		const error = form.querySelector('.promo-insufficient-funds');
+		const submit = form.querySelector('.promo-confirm-button');
+
+		if (error) {
+			error.classList.toggle('d-none', !insufficientFunds);
+		}
+
+		if (submit) {
+			submit.disabled = insufficientFunds || invalidDays;
+		}
+	}
+});
+</script>
 		

@@ -46,6 +46,19 @@ class Updates extends Model
 		return $this->belongsToMany(User::class, 'bookmarks','updates_id','user_id');
 	}
 
+	public function promotions()
+	{
+		return $this->hasMany(PromotedPost::class, 'update_id');
+	}
+
+	public function activePromotion()
+	{
+		return $this->hasMany(PromotedPost::class, 'update_id')
+			->where('status', 'active')
+			->where('ends_at', '>=', now())
+			->orderByDesc('created_at');
+	}
+
 	public function totalComments()
 	{
 		$post = $this->withCount(['comments', 'replies'])->whereId($this->id)->get();

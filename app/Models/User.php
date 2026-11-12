@@ -187,6 +187,11 @@ class User extends Authenticatable implements HasLocalePreference
     return $this->hasMany(Updates::class)->where('status', 'active');
   }
 
+  public function promotedPosts()
+  {
+    return $this->hasMany(PromotedPost::class)->orderByDesc('created_at');
+  }
+
   public function updatesPostDetail()
   {
     return $this->hasMany(Updates::class)->where('status', '<>', 'encode');

@@ -30,6 +30,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\PayPerViewController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\AdvertisingController;
+use App\Http\Controllers\PromotedPostController;
 use App\Http\Controllers\UploadMediaController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\InstallScriptController;
@@ -527,6 +528,9 @@ Route::get('verify/account/{confirmation_code}', [HomeController::class, 'getVer
 	Route::post('comment/like',[CommentsController::class, 'like'])->middleware('auth'); 
 
 	Route::get('my/posts',[UserController::class, 'myPosts'])->name('my.posts');
+	Route::get('my/promotions',[PromotedPostController::class, 'index'])->name('my.promotions');
+	Route::post('post/promote/{post}', [PromotedPostController::class, 'store'])->name('post.promote');
+	Route::post('post/promote/remove/{promotion}', [PromotedPostController::class, 'destroy'])->name('post.promote.remove');
 	Route::get('post/editing',[UserController::class, 'postEditing'])->name('post.edit.pending');
 	Route::get('block/countries',[UserController::class, 'blockCountries']);
 	Route::post('block/countries',[UserController::class, 'blockCountriesStore']);
