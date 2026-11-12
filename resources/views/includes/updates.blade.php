@@ -36,6 +36,11 @@
 				$checkPayPerView = auth()->user()->payPerView()->where('updates_id', $response->id)->first();
 			}
 		$activePromotion = $response->activePromotion()->first();
+		$isSponsored = $activePromotion
+			&& $activePromotion->starts_at
+			&& $activePromotion->starts_at->isPast()
+			&& $activePromotion->ends_at
+			&& $activePromotion->ends_at->isFuture();
 				$creatorLive = Helper::isCreatorLive($getCurrentLiveCreators , $response->creator->id);
 
 		$totalLikes = number_format($response->likes->count());
@@ -77,7 +82,7 @@
 	@endphp
 
  
-	<div class="card mb-3 card-updates views rounded-large shadow-large card-border-0 @if ($shouldBlur) adult-content-blur @endif"  @if ($response->status == 'pending') post-pending @endif @if ($response->fixed_post == '1' && request()->path() == $response->creator->username || auth()->check() && $response->fixed_post == '1' && $response->creator->id == auth()->user()->id) pinned-post @endif" data="{{$response->id}}">
+	<div class="card mb-3 card-updates views rounded-large shadow-large card-border-0 @if ($shouldBlur) adult-content-blur @endif"  @if ($response->status == 'pending') post-pending @endif @if ($response->fixed_post == '1' && request()->path() == $response->creator->username || auth()->check() && $response->fixed_post == '1' && $response->creator->id == auth()->user()->id) pinned-post @endif" data="{{$response->id}}" @if ($isSponsored) data-impression-url="{{ route('promoted-post.impression', $activePromotion->id) }}" @endif>
 	<div class="card-body">
 		<div class="pinned_post text-muted small w-100 mb-2 {{ $response->fixed_post == '1' && request()->path() == $response->creator->username || auth()->check() && $response->fixed_post == '1' && $response->creator->id == auth()->user()->id ? 'pinned-current' : 'display-none' }}">
 			<i class="bi bi-pin mr-2"></i> {{ __('general.pinned_post') }}
@@ -119,6 +124,10 @@
 						<i class="bi bi-patch-check-fill"></i>
 					</small>
 				@endif
+
+				@if ($isSponsored)
+					<small class="text-muted ml-1"><i class="bi bi-globe mr-1"></i>Patrocinado</small>
+				@endif
 					
 					 @if(
 			auth()->check()
@@ -157,7 +166,7 @@
 
 				<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown_options">
 					@if (request()->path() != $response->creator->username.'/post/'.$response->id)
-						<a class="dropdown-item mb-1" href="{{url($response->creator->username.'/post', $response->id)}}"><i class="bi bi-box-arrow-in-up-right mr-2"></i> {{__('general.go_to_post')}}</a>
+						<a class="dropdown-item mb-1" href="{{ $isSponsored ? route('promoted-post.click', $activePromotion->id) : url($response->creator->username.'/post', $response->id) }}"><i class="bi bi-box-arrow-in-up-right mr-2"></i> {{__('general.go_to_post')}}</a>
 					@endif
 
 					@if ($response->status == 'active')
@@ -235,7 +244,7 @@
 						</button>
 
 						@if (request()->path() != $response->creator->username.'/post/'.$response->id)
-							<a class="dropdown-item" href="{{url($response->creator->username.'/post', $response->id)}}">
+							<a class="dropdown-item" href="{{ $isSponsored ? route('promoted-post.click', $activePromotion->id) : url($response->creator->username.'/post', $response->id) }}">
 								<i class="bi bi-box-arrow-in-up-right mr-2"></i> {{__('general.go_to_post')}}
 							</a>
 						@endif

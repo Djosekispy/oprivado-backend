@@ -195,6 +195,7 @@ document.addEventListener('click', (e) => {
 
     const pendingPosts = [];
     const processedPosts = new WeakSet();
+    const observedPromotions = new WeakSet();
     const csrfMeta = document.querySelector('meta[name="csrf-token"]');
     const csrfToken = csrfMeta ? csrfMeta.content : '';
     let postsSincePromotion = 0;
@@ -242,15 +243,17 @@ document.addEventListener('click', (e) => {
         observer.observe(card);
     }
 
+    function observePromotion(card) {
+        if (observedPromotions.has(card)) {
+            return;
+        }
+
+        observedPromotions.add(card);
+        recordImpression(card);
+    }
+
     async function insertPromotionAfter(post) {
         const endpoint = new URL(@json(route('promoted-post.random')), window.location.origin);
-        Array.from(feed.querySelectorAll('.card-updates[data], .js-promoted-post[data-update-id]')).slice(-100).forEach(post => {
-            const postId = post.classList.contains('card-updates')
-                ? post.getAttribute('data')
-                : post.dataset.updateId;
-            endpoint.searchParams.append('exclude_posts[]', postId);
-        });
-
         const response = await fetch(endpoint.toString(), {
             cache: 'no-store',
             credentials: 'same-origin',
@@ -259,6 +262,7 @@ document.addEventListener('click', (e) => {
 
         if (response.status === 204) {
             noMorePromotions = true;
+            console.log('Nenhuma publicação patrocinada elegível encontrada.');
             return;
         }
 
@@ -269,13 +273,14 @@ document.addEventListener('click', (e) => {
         const template = document.createElement('template');
         template.innerHTML = (await response.text()).trim();
         const card = template.content.firstElementChild;
+        console.log('Publicação patrocinada recebida:', card);
 
-        if (!card || !card.classList.contains('js-promoted-post')) {
+        if (!card || !card.classList.contains('card-updates') || !card.dataset.impressionUrl) {
             throw new Error('A resposta AJAX da promoção não contém o componente esperado.');
         }
 
         post.insertAdjacentElement('afterend', card);
-        recordImpression(card);
+        observePromotion(card);
     }
 
     async function processPosts() {
@@ -316,6 +321,11 @@ document.addEventListener('click', (e) => {
         posts.push(...node.querySelectorAll('.card-updates'));
 
         posts.forEach(post => {
+            if (post.dataset.impressionUrl) {
+                observePromotion(post);
+                return;
+            }
+
             if (!processedPosts.has(post)) {
                 processedPosts.add(post);
                 pendingPosts.push(post);
@@ -325,7 +335,7 @@ document.addEventListener('click', (e) => {
         processPosts();
     }
 
-    feed.querySelectorAll('.js-promoted-post').forEach(recordImpression);
+    feed.querySelectorAll('.card-updates[data-impression-url]').forEach(observePromotion);
     feed.querySelectorAll('.card-updates').forEach(enqueuePosts);
 
     new MutationObserver(mutations => {

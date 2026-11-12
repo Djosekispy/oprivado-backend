@@ -18,24 +18,14 @@ class PromotedPostController extends Controller
 {
     public const DAILY_PRICE = 2000.00;
 
-    public function randomComponent(Request $request): Response
+    public function randomComponent(): Response
     {
-        $request->validate([
-            'exclude_posts' => ['sometimes', 'array', 'max:100'],
-            'exclude_posts.*' => ['integer'],
-        ]);
-
-        $seenCampaigns = session('explore_promoted_post_cycle', []);
         $country = Helper::userCountry();
-        $excludedPostIds = $request->input('exclude_posts', []);
 
-        $campaigns = PromotedPost::query()
+        $promotion = PromotedPost::query()
             ->where('status', 'active')
             ->where('starts_at', '<=', now())
             ->where('ends_at', '>', now())
-            ->when($excludedPostIds, function (Builder $query) use ($excludedPostIds) {
-                $query->whereNotIn('update_id', $excludedPostIds);
-            })
             ->whereHas('post', function (Builder $postQuery) use ($country) {
                 $postQuery->where('status', 'active')
                     ->whereHas('creator', function (Builder $creatorQuery) use ($country) {
@@ -49,23 +39,19 @@ class PromotedPostController extends Controller
                         }
                     });
             })
-            ->with(['post.creator', 'post.media']);
-
-        $promotion = (clone $campaigns)
-            ->whereNotIn('id', $seenCampaigns)
+            ->with(['post' => function (Builder $postQuery) {
+                $postQuery->getSelectRelations();
+            }])
             ->inRandomOrder()
             ->first();
 
-        if (! $promotion) {
-            session()->put('explore_promoted_post_cycle', []);
-
+        if (! $promotion || ! $promotion->post) {
             return response('', 204);
         }
 
-        $seenCampaigns[] = $promotion->id;
-        session()->put('explore_promoted_post_cycle', array_values(array_unique($seenCampaigns)));
-
-        return response()->view('includes.promoted-post', ['promotion' => $promotion]);
+        return response()->view('includes.updates', [
+            'updates' => collect([$promotion->post]),
+        ]);
     }
 
     public function trackImpression(PromotedPost $promotion): Response
