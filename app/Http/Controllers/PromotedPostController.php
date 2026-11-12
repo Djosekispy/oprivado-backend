@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Helper;
+use App\Models\AdClickImpression;
 use App\Models\PromotedPost;
 use App\Models\Updates;
 use App\Models\User;
@@ -9,11 +11,77 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class PromotedPostController extends Controller
 {
     public const DAILY_PRICE = 2000.00;
+
+    public function randomComponent(Request $request): Response
+    {
+        $request->validate([
+            'exclude_posts' => ['sometimes', 'array', 'max:100'],
+            'exclude_posts.*' => ['integer'],
+        ]);
+
+        $seenCampaigns = session('explore_promoted_post_cycle', []);
+        $country = Helper::userCountry();
+        $excludedPostIds = $request->input('exclude_posts', []);
+
+        $campaigns = PromotedPost::query()
+            ->where('status', 'active')
+            ->where('starts_at', '<=', now())
+            ->where('ends_at', '>', now())
+            ->when($excludedPostIds, function (Builder $query) use ($excludedPostIds) {
+                $query->whereNotIn('update_id', $excludedPostIds);
+            })
+            ->whereHas('post', function (Builder $postQuery) use ($country) {
+                $postQuery->where('status', 'active')
+                    ->whereHas('creator', function (Builder $creatorQuery) use ($country) {
+                        $creatorQuery->where('status', 'active');
+
+                        if ($country) {
+                            $creatorQuery->where(function (Builder $countryQuery) use ($country) {
+                                $countryQuery->whereNull('blocked_countries')
+                                    ->orWhere('blocked_countries', 'NOT LIKE', '%' . $country . '%');
+                            });
+                        }
+                    });
+            })
+            ->with(['post.creator', 'post.media']);
+
+        $promotion = (clone $campaigns)
+            ->whereNotIn('id', $seenCampaigns)
+            ->inRandomOrder()
+            ->first();
+
+        if (! $promotion) {
+            session()->put('explore_promoted_post_cycle', []);
+
+            return response('', 204);
+        }
+
+        $seenCampaigns[] = $promotion->id;
+        session()->put('explore_promoted_post_cycle', array_values(array_unique($seenCampaigns)));
+
+        return response()->view('includes.promoted-post', ['promotion' => $promotion]);
+    }
+
+    public function trackImpression(PromotedPost $promotion): Response
+    {
+        if (
+            $promotion->status === 'active'
+            && $promotion->starts_at
+            && $promotion->starts_at->isPast()
+            && $promotion->ends_at
+            && $promotion->ends_at->isFuture()
+        ) {
+            $promotion->recordImpression();
+        }
+
+        return response('', 204);
+    }
 
     public function index(): View
     {

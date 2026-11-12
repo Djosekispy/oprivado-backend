@@ -9,9 +9,7 @@ use App\Models\User;
 use App\Models\Media;
 use App\Models\Reports;
 use App\Models\Updates;
-use App\Models\PromotedPost;
 use App\Models\Messages;
-use App\Models\AdClickImpression;
 use App\Models\VideoViews;
 use Illuminate\Support\Str;
 use App\Events\NewPostEvent;
@@ -868,8 +866,6 @@ if (
       ->getSelectRelations()
       ->simplePaginate(config('settings.number_posts_show'));
 
-    $updates->setCollection($this->interleavePromotedPosts($updates->getCollection()));
-
     $users = $this->userExplore();
 
     // Pay Per Views User
@@ -916,93 +912,7 @@ if (
       ->getSelectRelations()
       ->get();
 
-    return view('includes.updates', [
-      'updates' => $this->interleavePromotedPosts($updates),
-    ])->render();
-  }
-
-  private function interleavePromotedPosts($updates)
-  {
-    $postCount = $updates->count();
-
-    if ($postCount === 0) {
-      return $updates;
-    }
-
-    $promotionLimit = max(1, (int) ceil($postCount / 5));
-    $ip = request()->ip();
-    $recentImpressions = AdClickImpression::query()
-      ->select('advertisings_id')
-      ->where('type', 'promotion_impression')
-      ->where('ip', $ip)
-      ->where('created_at', '>=', now()->subDay());
-
-    $promotions = PromotedPost::query()
-      ->where('status', 'active')
-      ->where('starts_at', '<=', now())
-      ->where('ends_at', '>', now())
-      ->whereNotIn('id', $recentImpressions)
-      ->whereHas('post', function ($query) {
-        $query->where('status', 'active');
-      })
-      ->with(['post' => function ($query) {
-        $query->where('status', 'active')
-          ->getSelectRelations()
-          ->verifyCountryBlocking();
-      }])
-      ->inRandomOrder()
-      ->limit($promotionLimit)
-      ->get()
-      ->filter(function ($promotion) {
-        return $promotion->post && $promotion->post->creator;
-      })
-      ->values();
-
-    if ($promotions->isEmpty()) {
-      return $updates;
-    }
-
-    $promotedPostIds = $promotions->pluck('update_id')->all();
-    $posts = $updates->reject(function ($post) use ($promotedPostIds) {
-      return in_array($post->id, $promotedPostIds);
-    })->values();
-
-    $slotLimit = max(1, (int) ceil(max(1, $posts->count()) / 5));
-    $promotions = $promotions->take($slotLimit)->values();
-    $slots = [];
-
-    foreach ($promotions as $index => $promotion) {
-      $slot = $posts->isEmpty()
-        ? 0
-        : min($posts->count(), max(1, (($index + 1) * 5) - random_int(0, 2)));
-      $slots[$slot] = $promotion;
-    }
-
-    if (! $slots) {
-      return $updates;
-    }
-
-    foreach ($slots as $promotion) {
-      $post = $promotion->post;
-      $post->setRelation('servedPromotion', $promotion);
-      $promotion->recordImpression();
-    }
-
-    $interleaved = collect();
-    if (isset($slots[0])) {
-      $interleaved->push($slots[0]->post);
-    }
-
-    foreach ($posts as $index => $post) {
-      $interleaved->push($post);
-      $slot = $index + 1;
-
-      if (isset($slots[$slot])) {
-        $interleaved->push($slots[$slot]->post);
-      }
-    }
-
-    return $interleaved;
+    return view('includes.updates', ['updates' => $updates])->render();
   }
 
   public function imageFocus($type, $path)

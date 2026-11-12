@@ -1016,6 +1016,8 @@ Route::post('webhook/storage/story/{id}/{data}', [StorageCoconutController::clas
 Route::any('webhook/story/coco/{mediaId}/{resourceId}', [WebhookCoconutController::class, 'webhookStory'])->name('webhook.story.coco');
 
 // Clicks Ads
+Route::get('ajax/promoted-post', [PromotedPostController::class, 'randomComponent'])->name('promoted-post.random');
+Route::post('promoted-post/{promotion}/impression', [PromotedPostController::class, 'trackImpression'])->name('promoted-post.impression');
 Route::get('click/ad/{ad}', [AdvertisingController::class, 'clicksAds'])->name('clicks');
 Route::get('promoted-post/{promotion}/click', [PromotedPostController::class, 'trackClick'])->name('promoted-post.click');
 

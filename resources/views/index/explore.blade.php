@@ -185,7 +185,154 @@ document.addEventListener('click', (e) => {
     }
 });
 </script>
- 
 
+<script>
+(() => {
+    const feed = document.getElementById('updatesPaginator');
+    if (!feed || !window.fetch) {
+        return;
+    }
+
+    const pendingPosts = [];
+    const processedPosts = new WeakSet();
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfMeta ? csrfMeta.content : '';
+    let postsSincePromotion = 0;
+    let nextPromotionAfter = randomInterval();
+    let processingPosts = false;
+    let noMorePromotions = false;
+
+    function randomInterval() {
+        return Math.floor(Math.random() * 4) + 4;
+    }
+
+    function recordImpression(card) {
+        const sendImpression = () => fetch(card.dataset.impressionUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            keepalive: true,
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        }).then(response => {
+            if (!response.ok && response.status !== 204) {
+                console.error('Não foi possível registar a impressão da publicação patrocinada.', response.status);
+            }
+        }).catch(error => {
+            console.error('Erro ao registar a impressão da publicação patrocinada.', error);
+        });
+
+        if (!('IntersectionObserver' in window)) {
+            sendImpression();
+            return;
+        }
+
+        const observer = new IntersectionObserver((entries, intersectionObserver) => {
+            if (!entries.some(entry => entry.isIntersecting && entry.intersectionRatio >= 0.5)) {
+                return;
+            }
+
+            intersectionObserver.disconnect();
+            sendImpression();
+        }, { threshold: 0.5 });
+
+        observer.observe(card);
+    }
+
+    async function insertPromotionAfter(post) {
+        const endpoint = new URL(@json(route('promoted-post.random')), window.location.origin);
+        Array.from(feed.querySelectorAll('.card-updates[data], .js-promoted-post[data-update-id]')).slice(-100).forEach(post => {
+            const postId = post.classList.contains('card-updates')
+                ? post.getAttribute('data')
+                : post.dataset.updateId;
+            endpoint.searchParams.append('exclude_posts[]', postId);
+        });
+
+        const response = await fetch(endpoint.toString(), {
+            cache: 'no-store',
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+
+        if (response.status === 204) {
+            noMorePromotions = true;
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Pedido de publicação patrocinada falhou: ${response.status}`);
+        }
+
+        const template = document.createElement('template');
+        template.innerHTML = (await response.text()).trim();
+        const card = template.content.firstElementChild;
+
+        if (!card || !card.classList.contains('js-promoted-post')) {
+            throw new Error('A resposta AJAX da promoção não contém o componente esperado.');
+        }
+
+        post.insertAdjacentElement('afterend', card);
+        recordImpression(card);
+    }
+
+    async function processPosts() {
+        if (processingPosts) {
+            return;
+        }
+
+        processingPosts = true;
+        while (pendingPosts.length > 0) {
+            const post = pendingPosts.shift();
+            if (!post.isConnected) {
+                continue;
+            }
+
+            postsSincePromotion++;
+            if (!noMorePromotions && postsSincePromotion >= nextPromotionAfter) {
+                postsSincePromotion = 0;
+                nextPromotionAfter = randomInterval();
+                try {
+                    await insertPromotionAfter(post);
+                } catch (error) {
+                    console.error('Erro ao carregar uma publicação patrocinada.', error);
+                }
+            }
+        }
+        processingPosts = false;
+    }
+
+    function enqueuePosts(node) {
+        if (!(node instanceof Element)) {
+            return;
+        }
+
+        const posts = [];
+        if (node.matches('.card-updates')) {
+            posts.push(node);
+        }
+        posts.push(...node.querySelectorAll('.card-updates'));
+
+        posts.forEach(post => {
+            if (!processedPosts.has(post)) {
+                processedPosts.add(post);
+                pendingPosts.push(post);
+            }
+        });
+
+        processPosts();
+    }
+
+    feed.querySelectorAll('.js-promoted-post').forEach(recordImpression);
+    feed.querySelectorAll('.card-updates').forEach(enqueuePosts);
+
+    new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            mutation.addedNodes.forEach(enqueuePosts);
+        });
+    }).observe(feed, { childList: true, subtree: true });
+})();
+</script>
 
 @endsection

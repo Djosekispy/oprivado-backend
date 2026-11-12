@@ -1,11 +1,6 @@
  @foreach ($updates as $response)
-
-	@if ($response->relationLoaded('servedPromotion') && $response->getRelation('servedPromotion'))
-		@include('includes.promoted-post', ['promotion' => $response->getRelation('servedPromotion')])
-		@continue
-	@endif
 		
-@php
+ @php
     $isAdultContent = false;
 
     if (isset($response->categories) && $response->categories->isNotEmpty()) {

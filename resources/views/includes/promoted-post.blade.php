@@ -14,7 +14,12 @@
     $creatorName = $creator->hide_name == 'yes' ? $creator->username : $creator->name;
 @endphp
 
-<a href="{{ $clickUrl }}" class="card rounded-large border shadow-sm mb-3 p-3 text-reset text-decoration-none promoted-post">
+<a
+    href="{{ $clickUrl }}"
+    data-impression-url="{{ route('promoted-post.impression', $promotion->id) }}"
+    data-update-id="{{ $post->id }}"
+    class="card rounded-large border shadow-sm mb-3 p-3 text-reset text-decoration-none promoted-post js-promoted-post"
+>
     <div class="d-flex align-items-center">
         <div class="flex-shrink-0">
             <img
