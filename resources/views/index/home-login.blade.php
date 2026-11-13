@@ -22,12 +22,11 @@
 @endsection
 
 @section('content')
-
   <div class="jumbotron m-0">
     <div class="container pt-lg-md">
       <div class="row">
         <div class="col-lg-7">
-          <img src="https://oprivado.ao/public/img/homeprivadonovo.png" class="img-center img-fluid d-lg-block d-none">
+          <img src="https://oprivado.ao/public/img/banner.png" class="img-center img-fluid d-lg-block d-none">
         </div>
         <div class="col-lg-4">
 			

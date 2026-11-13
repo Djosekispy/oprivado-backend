@@ -9,10 +9,6 @@
 <link href="{{ asset('public/css/bootstrap.min.css') }}" rel="stylesheet">
 @endif
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-
 <link href="{{ asset('public/css/styles.css') }}?v={{$settings->version}}" rel="stylesheet">
 <link href="{{ asset('public/js/plyr/plyr.css')}}?v={{$settings->version}}" rel="stylesheet" type="text/css" />
 

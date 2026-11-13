@@ -22,12 +22,8 @@
 >
     <div class="d-flex align-items-center">
         <div class="flex-shrink-0">
-            <img
-                class="img-fluid rounded"
-                src="{{ $thumbnail ?: Helper::getFile(config('path.avatar') . $creator->avatar) }}"
-                alt=""
-                style="width: 130px; height: 86px; object-fit: cover;"
-            >
+       <img style=" object-fit: cover; " class="img-fluid rounded img-thanks-share" height="130" width="130"
+            src="{{ $thumbnail ?: Helper::getFile(config('path.avatar') . $creator->avatar) }}">
         </div>
         <div class="flex-grow-1 ml-3">
             <small class="d-block text-muted mb-1">

@@ -21,9 +21,6 @@
           <li class="mb-2">
             <strong>3.</strong> É proibido incentivar transações fora da plataforma, incluindo via WhatsApp ou outros meios externos (Regra 12ª).
           </li>
-			<li class="mb-2">
-            <strong>4.</strong> Nunca adicione seu número de telemóvel nos seus posts, por razões de segurança.
-          </li>
         </ul>
 
         <p class="text-muted small mb-0">

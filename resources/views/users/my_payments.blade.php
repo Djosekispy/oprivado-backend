@@ -121,7 +121,7 @@
                     @if (request()->is('my/payments'))
                     <td>
                       @if ($transaction->approved == '1')
-                      <a href="{{url('payments/invoice', $transaction->id)}}" target="_blank"><i class="far fa-file-alt"></i> {{trans('general.invoice')}}</a>
+                      <a href="{{url('payments/invoice', $transaction->id)}}" target="_blank"><i class="far fa-file-alt"></i> </a>
                     </td>
                   @else
                     {{trans('general.no_available')}}

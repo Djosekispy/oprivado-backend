@@ -22,6 +22,8 @@
         {{$comment->user->hide_name == 'yes' ? $comment->user->username : $comment->user->name}} 
       </a>
 
+		@if (in_array($comment->user->verified_id, ['no', 'reject'])) <small  title="Conta Pro" data-toggle="tooltip" data-placement="top" data-original-title="Conta Pro"> <i style="font-size: 12px;color: #fd7350;" class="bi-star-fill mr-1"></i></small> @endif
+		  
       @if ($comment->user->verified_id == 'yes')
         <small class="verified">
   						<i class="bi bi-patch-check-fill"></i>

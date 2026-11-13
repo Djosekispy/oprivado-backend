@@ -28,7 +28,7 @@
           <div class="content-p">
 <p>Oprivado é uma rede social como outra qualquer onde você pode publicar seus conteúdos no formato de fotos e vídeos para diversas pessoas acessarem. A principal diferença dela para as demais redes é que o Oprivado oferece diversas formas de o criador de conteúdo ganhar dinheiro com os seus conteúdos dentro da plataforma.</p>
 
- <p>Oprivado Angola foi criado no dia 23 de Agosto de 2021 e lançado oficialmente no dia 7 de fevereiro de 2025 pelo empreendedor Leandro Mendes Kevin, director executivo da empresa <a target="_blank" href="https://orangeafrika.com/">ORANGE AFRIKA LTD.</a>, que detém todos os direitos pela plataforma.</p>
+ <p>Oprivado Angola foi criado no dia 23 de Agosto de 2021 e lançado oficialmente no dia 7 de fevereiro de 2025 pelo empreendedor Leandro Mendes Kevin, director executivo da empresa <a target="_blank" href="https://orangeafrika.com/">ORANGE AFRIKA LTD.</a>, empresa que detém todos os direitos pela plataforma.</p>
 
 <p>Ao criar uma conta simples, você poderá acessar os conteúdos dos criadores, desde que pague para consumi-los. Mas, ao entrar na plataforma como criador de conteúdo, você pode criar uma assinatura para seu público acessar seus conteúdos todo mês ou até mesmo definir valores para os seguidores verem alguns de seus posts.</p>
 
@@ -39,19 +39,32 @@
 <p>Quanto aos limites da Lei, o Oprivado funciona como uma plataforma de assinatura, permitindo que seguidores paguem por conteúdos exclusivos de criadores. O que circula na plataforma é conteúdo digital de diversos temas e inclusive adulto que é diferente de prostituição física que é punido no Codigo Penal angolano. O conteúdo digital é produzido voluntariamente pelo próprio criador maior de 18 anos verificado com os documentos de identificação emitidos pelo Governo de Angola. Deste modo, os criadores podem explorar sua própria imagem em conteúdos de diversos temas de forma segura, recebendo pagamentos diretamente dos assinantes.</p>
 
 <br>
+			  
 <div class="row justify-content-center text-left mb-sm">
         <div class="col-lg-12 py-3">
           <h2 class="mb-0 font-montserrat">
-            Tipos de perfis
+            Liberdade, Responsabilidade e Segurança
           </h2>
         </div>
       </div>
+			  
+			 <p> O Oprivado é uma plataforma de conteúdos exclusivos que valoriza a liberdade de expressão, a criatividade e a liberdade individual, permitindo que os criadores partilhem conteúdos de diferentes categorias, como Adulto, Esportes, Culinária, Lifestyle, Podcasts, Viagens e muito mais.</p>
+
+<p>O Oprivado não é uma plataforma de namoro ou de encontros. Por isso, não incentivamos nem promovemos a marcação de encontros presenciais através da plataforma, especialmente quando estes possam colocar em risco a sua segurança ou integridade física.</p>
+
+<p>A liberdade de utilização da plataforma deve ser acompanhada de responsabilidade. Cada utilizador é responsável pelas suas próprias decisões, interações e ações, tanto dentro como fora do Oprivado. Não incentivamos, apoiamos ou promovemos qualquer comportamento ou situação que possa comprometer a sua integridade física ou colocar a sua segurança em risco.</p>
+
+<p>O Oprivado destina-se exclusivamente à partilha e ao consumo de conteúdos exclusivos. Não nos responsabilizamos por encontros, acordos, interações ou acontecimentos que ocorram fora da plataforma, nem pelas consequências de decisões pessoais tomadas pelos utilizadores, sem prejuízo das responsabilidades que nos sejam legalmente aplicáveis.</p>
+
+<p>A sua liberdade é importante. A sua segurança e responsabilidade também. Utilize a plataforma de forma consciente, respeite as regras da comunidade e proteja sempre a sua integridade física e pessoal.</p>
       
-      <div class="blocks"><div class="block2"><p class="name2">Utilizador normal</p><p class="location">Este tipo de utilizador é indicado para quem gostaria de consumir conteúdo e interagir com os seus criadores favoritos. Entretanto, o seu perfil não estará visivel nas pesquisas ou na página de criadores de conteúdos.</p></div>
+      <div class="blocks mt-5"><div class="block2"><p class="name2">Utilizador normal</p><p class="location">Este tipo de utilizador é indicado para quem gostaria de apenas consumir conteúdo dos seus criadores favoritos. Entretanto, o seu perfil não estará visivel nas pesquisas ou na página de criadores de conteúdos.</p></div>
+		  
+		   <div class="block2"><p class="name2">Utilizador Pro</p><p class="location">Este é um utilizador privilegiado e é indicado para quem gostaria de consumir conteúdo e interagir com os seus criadores favoritos. Suporte diferenciado e maior credibilidade.</p></div>
 		  
       <div class="block2"><p class="name2">Criador de conteúdos</p><p class="location">Este tipo de utilizador é indicado para quem vai produzir e vender conteúdos auténticos e exclusivos no Oprivado. Todos os perfis de criadores de conteúdos são verificados com os seus documentos pessoais.</p></div>
 		  
-      <div class="block2"><p class="name2">Afiliado</p><p class="location">Partilhe o seu link de afiliado e ganhe 10% de todas as transações do seu referênciado, seja uma subscrição, gorjeta ou compra de conteúdo. Quanto mais referêcias melhor!</p></div> </div>
+      </div>
       
 <div class="mt-3 row justify-content-center text-left mb-sm">
         <div class="col-lg-12 py-3">

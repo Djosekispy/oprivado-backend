@@ -23,14 +23,14 @@
                 @endif
 
                 @if ($campaigns->count() > 0)
-                    <div class="row mb-3">
-                        <div class="col-sm-4 mb-2">
+                    <div class="border mb-3">
+                        <div class="col-sm-4 none mb-2">
                             <div class="card shadow-sm h-100"><div class="card-body">
                                 <small class="text-muted d-block">Impressões</small>
                                 <strong class="h4 mb-0">{{ number_format($totals->impressions) }}</strong>
                             </div></div>
                         </div>
-                        <div class="col-sm-4 mb-2">
+                        <div class="col-sm-4 none mb-2">
                             <div class="card shadow-sm h-100"><div class="card-body">
                                 <small class="text-muted d-block">Cliques</small>
                                 <strong class="h4 mb-0">{{ number_format($totals->clicks) }}</strong>
@@ -38,33 +38,32 @@
                         </div>
                         <div class="col-sm-4 mb-2">
                             <div class="card shadow-sm h-100"><div class="card-body">
-                                <small class="text-muted d-block">Valor investido</small>
+                                <small class="text-muted d-block mb-1">Montante total gasto</small>
                                 <strong class="h4 mb-0">{{ Helper::amountFormatDecimal($totals->total_amount) }}</strong>
                             </div></div>
                         </div>
                     </div>
 
                     @foreach ($campaigns as $campaign)
-                        <div class="card shadow-sm mb-3">
+                        <div style="border: 1px solid #dbdbdb !important;" class="card mb-3">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start flex-wrap mb-3">
-                                    <div class="mr-3">
+                                    <div class="mr-3 mb-2">
                                         @if ($campaign->post && $campaign->post->creator)
-                                            <a href="{{ url($campaign->post->creator->username . '/post/' . $campaign->post->id) }}" target="_blank">
-                                                {{ Str::limit(strip_tags($campaign->post->description), 100) }}
+                                            Publicar: <a style=" color: #2b2b2b!important; " href="{{ url($campaign->post->creator->username . '/post/' . $campaign->post->id) }}" target="_blank">"{{ Str::limit(strip_tags($campaign->post->description), 100) }}"
                                             </a>
                                         @else
                                             Publicação removida
                                         @endif
-                                        <small class="d-block text-muted">{{ $campaign->days }} dias · {{ Helper::amountFormatDecimal($campaign->total_amount) }}</small>
-                                    </div>
-                                    @if ($campaign->status === 'active')
-                                        <span class="badge badge-success">Ativa</span>
+                                        <small class="d-block mt-2 text-muted">{{ $campaign->days }} dias · {{ Helper::amountFormatDecimal($campaign->total_amount) }} · @if ($campaign->status === 'active')
+                                        <span class="badge badge-light" style="color: #28a745;margin-left: 2px;">Ativa</span>
                                     @elseif ($campaign->status === 'removed')
-                                        <span class="badge badge-secondary">Removida</span>
+                                        <span class="badge badge-light" style="color: red;margin-left: 2px;">Removida</span>
                                     @else
-                                        <span class="badge badge-light">Expirada</span>
-                                    @endif
+                                        <span style="color: red;margin-left: 2px;" class="badge badge-light">Expirada</span>
+                                    @endif </small>
+                                    </div>
+                                    
                                 </div>
 
                                 <div class="row text-center">

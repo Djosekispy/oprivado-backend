@@ -67,9 +67,15 @@
                     <td>{{Helper::formatDate($restriction->created_at)}}</td>
 
                     <td>
-                      <button title="" class="btn btn-danger btn-sm-custom removeRestriction" type="button" data-user="{{$restriction->userRestricted()->id}}" id="restrictUser">
-                        <i class="bi-trash"></i> {{ __('general.remove_restriction') }}
-                      </button>
+                      @if($restriction->userRestricted)
+    <button title=""
+            class="btn btn-primary btn-sm-custom removeRestriction"
+            type="button"
+            data-user="{{ $restriction->userRestricted->id }}"
+            id="restrictUser">
+         {{ __('general.remove_restriction') }}
+    </button>
+@endif
                     </td>
                   </tr>
                 @endforeach

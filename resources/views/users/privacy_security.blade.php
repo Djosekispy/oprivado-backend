@@ -160,21 +160,6 @@
           @endif
 
           @if (! auth()->user()->isSuperAdmin())
-			
-			@if (auth()->user()->verified_id == 'yes' && auth()->user()->free_subscription == 'yes' )
-			 <label style=" margin-bottom: 0px; " class="mt-5">Desactivar conta</label><br>
-            <small class="w-100">{{ __('general.deactivate_your_account_alert') }}</small>
-            <div class="w-100 d-block mt-2">
-              <form action="{{ route('deactivate.account') }}" method="POST">
-                @csrf
-                <button class="btn btn-block btn-main btn-primary pr-3 pl-3" id="actionDeactivate">
-                   Desactivar conta
-                </button>
-              </form>
-              
-            </div>
-          @endif
-			
 			  <label class="mt-5">{{ __('general.delete_account') }}</label><br>
           <small class="none w-100">* {{ __('general.delete_account_alert') }}</small>
           <div class="w-100 d-block mt-2">

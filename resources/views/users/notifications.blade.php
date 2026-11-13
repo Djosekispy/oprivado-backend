@@ -231,7 +231,7 @@
         				$linkDestination = url('my/payments/received');
                 $text_link       = __('general.gift');
         				break;
-
+			
               case 27:
                 $action          = __('general.pro_expired_notification');
                 $linkDestination = url($key->username);

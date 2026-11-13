@@ -68,7 +68,7 @@
 
 					@guest
 					 @if (!$settings->disable_creators_section)
-						<li class="nav-item manutencao">
+						<li class="nav-item">
 							<a style="font-size:14px;" class="nav-link" href="{{url('creators')}}">{{__('general.explore')}}</a>
 						</li>
 						@endif
@@ -271,7 +271,7 @@
 					</li>
 
 					@if (!$settings->disable_creators_section)
-					<li class="nav-item manutencao dropdown d-lg-block d-none">
+					<li class="nav-item dropdown d-lg-block d-none">
 						<a class="nav-link px-2" href="{{url('explore')}}" title="{{__('general.explore')}}">
 							<i class="feather icon-compass icon-navbar"></i>
 							<span class="d-lg-none align-middle ml-1">{{__('general.explore')}}</span>
@@ -279,7 +279,7 @@
 					</li>
 					@endif
 					
-					 @if ($settings->live_streaming_status == 'on') <li class="nav-item manutencao dropdown d-lg-block d-none">
+					 @if ($settings->live_streaming_status == 'on') <li class="nav-item dropdown d-lg-block d-none">
 						<a class="nav-link px-2" href="{{ url('explore/creators/live') }}" title="Em directo">
 
 							<i class="feather icon-radio icon-navbar"></i>
@@ -296,10 +296,17 @@
 						</a>
 					</li>@endif
 					
-					<li class="nav-item manutencao dropdown d-lg-block d-none">
+					<li class="nav-item dropdown d-lg-block d-none">
 						<a class="nav-link px-2" href="{{url('creators/more-active')}}" title="{{__('general.explore_creators')}}">
 							<i class="feather icon-star icon-navbar"></i>
 							<span class="d-lg-none align-middle ml-1">{{__('general.creators')}}</span>
+						</a>
+					</li>
+					
+					<li class="nav-item dropdown d-lg-block d-none">
+						<a class="nav-link px-2" href="{{url('/top')}}" title="Top criadores">
+							<i class="feather icon-trending-up icon-navbar"></i>
+							<span class="d-lg-none align-middle ml-1">Top criadores</span>
 						</a>
 					</li>
 

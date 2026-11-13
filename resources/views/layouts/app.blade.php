@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt">
-	<!-- Oprivado Angola, ORANGE AFRIKA LTD. -->
+	<!-- Oprivado, ORANGE AFRIKA LTD. -->
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,shrink-to-fit=no">
@@ -10,7 +10,7 @@
   <meta name="google-site-verification" content="tA1uEikYiu14zJKHXpWvJYKoiWudDbDKIORDf_tOXpQ" />
   <meta name="keywords" content="oprivado, oprivado angola, angola, influencers, criador de conteudo, conteudo exclusivo, rede social" />
   <meta name="theme-color" content="{{ auth()->check() && auth()->user()->dark_mode == 'on' ? '#303030' : $settings->color_default }}">
-  <title>{{ auth()->check() && User::notificationsCount() ? '('.User::notificationsCount().') ' : '' }}@section('title')@show Oprivado Angola</title>
+  <title>{{ auth()->check() && User::notificationsCount() ? '('.User::notificationsCount().') ' : '' }}@section('title')@show Oprivado</title>
   <link rel="dns-prefetch" href="https://cdn.oprivado.ao">
   <link rel="preconnect" href="https://cdn.oprivado.ao">
 <link rel="dns-prefetch" href="//feathericons.com">
@@ -33,12 +33,13 @@
   "@context": "https://schema.org",
   "@type": "Organization",
   "@id": "https://oprivado.ao/#organization",
-  "name": "Oprivado Angola",
+  "name": "Oprivado",
   "url": "https://oprivado.ao",
   "logo": "https://oprivado.ao/public/img/logotipo.svg",
   "sameAs": [
-    "https://www.facebook.com/oprivado.ao/",
-    "https://www.instagram.com/oprivado.ao/"
+    "https://www.facebook.com/oprivado.ao",
+	"https://www.tiktok.com/@oprivado.ao",
+    "https://www.instagram.com/seja_oprivado"
   ],
   "description": "Oprivado é a plataforma de conteúdo exclusivo em Angola. Crie seu perfil para monetizar fotos e vídeos ou assine para ter acesso a conteúdo único!",
   "contactPoint": {
@@ -61,7 +62,131 @@
 </head>
 
 	<style type="text/css">
-		.live-dot {
+		/* Inter Tight - Thin (100) */
+@font-face {
+    font-family: 'Inter Tight';
+    src: url('/public/webfonts/inter/InterTight-Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Inter Tight - ExtraLight (200) */
+@font-face {
+    font-family: 'Inter Tight';
+    src: url('/public/webfonts/inter/InterTight-ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+		
+	.promotion-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.promotion-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.promotion-icon {
+	font-size: 18px;
+    flex-shrink: 0;
+    color: #686868;
+}
+
+.promotion-text {
+    color: #686868;
+    font-size: 12px;
+    line-height: 1.25;
+    font-weight: 400;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .promotion-banner {
+        align-items: stretch;
+    }
+}
+
+/* Inter Tight - Light (300) */
+@font-face {
+    font-family: 'Inter Tight';
+    src: url('/public/webfonts/inter/InterTight-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Inter Tight - Regular (400) */
+@font-face {
+    font-family: 'Inter Tight';
+    src: url('/public/webfonts/inter/InterTight-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Inter Tight - Medium (500) */
+@font-face {
+    font-family: 'Inter Tight';
+    src: url('/public/webfonts/inter/InterTight-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Inter Tight - SemiBold (600) */
+@font-face {
+    font-family: 'Inter Tight';
+    src: url('/public/webfonts/inter/InterTight-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Inter Tight - Bold (700) */
+@font-face {
+    font-family: 'Inter Tight';
+    src: url('/public/webfonts/inter/InterTight-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Inter Tight - ExtraBold (800) */
+@font-face {
+    font-family: 'Inter Tight';
+    src: url('/public/webfonts/inter/InterTight-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Inter Tight - Black (900) */
+@font-face {
+    font-family: 'Inter Tight';
+    src: url('/public/webfonts/inter/InterTight-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Itálico */
+@font-face {
+    font-family: 'Inter Tight';
+    src: url('/public/webfonts/inter/InterTight-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+	.live-dot {
     width: 8px;
     height: 8px;
     background: #ff2d2d;
@@ -490,12 +615,9 @@
     }
 }
 		
-		@media (max-width: 991px) {
-    .notify {
-        top: 9px !important;
-        right: 11px !important;
-    }
-}
+		@media (max-width: 305px) {.icon-navbar {
+    font-size: 18px!important;
+}}
 
 .notify {
 	top: 4px;
@@ -585,7 +707,7 @@ color: black!important;
 		
 	.sweet-alert {
     background-color: #fff;
-    font-family: Inter Tight, system-ui!important;
+    font-family: 'Inter Tight', sans-serif !important;
 }
 	.sweet-alert button {
     border: none!important;
@@ -890,7 +1012,7 @@ color: black!important;
     border-radius: 4px;
 	height: calc(2.75rem + -5px);
     transition: none;
-	font-family: Inter Tight, system-ui!important;
+	font-family: 'Inter Tight', sans-serif !important;
 }
 		
 		span.ml-2 {
@@ -959,23 +1081,7 @@ color: black!important;
 		.b-radio-custom {
     border-radius: 0px!important;
 }
-		.card {
-    border: 1px solid #dbdbdb;
-	border-radius: 4px !important;
-}
-		
-				body, a, p, h1, h2, h3, h4, h5, h6 {
-    font-family: Inter Tight, system-ui!important;
-		</style>
-
-<body>
-	
-<div id="page-loader">
-    <img src="/public/images/opvload.svg">
-</div>
-
-<style>
-#page-loader {
+		#page-loader {
     position: fixed;
     inset: 0;
     background: rgba(255,255,255,0.95);
@@ -990,13 +1096,28 @@ color: black!important;
     height: 80px;
 	pointer-events: none!important;
 }
+		
+		.card {
+    border: 1px solid #dbdbdb;
+	border-radius: 4px !important;
+}
+		
+body, a, p, h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter Tight', sans-serif !important;
+}
 </style>
 
+<body>
+	
 <script>
 window.addEventListener('load', function () {
     document.getElementById('page-loader').style.display = 'none';
 });
 </script>
+
+<div id="page-loader">
+    <img src="/public/images/opvload.svg">
+</div>
 	
   @if ($settings->google_tag_manager_body != '')
   {!! $settings->google_tag_manager_body !!}
@@ -1119,10 +1240,7 @@ window.addEventListener('load', function () {
 	 @include('includes.choose-sensitive')
 @endauth
 	
-	
-	
-	
-		<script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('select-proof')) {

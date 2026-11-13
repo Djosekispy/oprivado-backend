@@ -1,6 +1,6 @@
  @foreach ($updates as $response)
-		
- @php
+
+@php
     $isAdultContent = false;
 
     if (isset($response->categories) && $response->categories->isNotEmpty()) {
@@ -41,7 +41,8 @@
 			&& $activePromotion->starts_at->isPast()
 			&& $activePromotion->ends_at
 			&& $activePromotion->ends_at->isFuture();
-				$creatorLive = Helper::isCreatorLive($getCurrentLiveCreators , $response->creator->id);
+				
+		$creatorLive = Helper::isCreatorLive($getCurrentLiveCreators , $response->creator->id);
 
 		$totalLikes = number_format($response->likes->count());
 		$totalComments = $response->totalComments();
@@ -82,7 +83,8 @@
 	@endphp
 
  
-	<div class="card mb-3 card-updates views rounded-large shadow-large card-border-0 @if ($shouldBlur) adult-content-blur @endif"  @if ($response->status == 'pending') post-pending @endif @if ($response->fixed_post == '1' && request()->path() == $response->creator->username || auth()->check() && $response->fixed_post == '1' && $response->creator->id == auth()->user()->id) pinned-post @endif" data="{{$response->id}}" @if ($isSponsored) data-impression-url="{{ route('promoted-post.impression', $activePromotion->id) }}" @endif>
+<div class="card mb-3 card-updates views rounded-large shadow-large card-border-0 @if ($shouldBlur) adult-content-blur @endif"  @if ($response->status == 'pending') post-pending @endif @if ($response->fixed_post == '1' && request()->path() == $response->creator->username || auth()->check() && $response->fixed_post == '1' && $response->creator->id == auth()->user()->id) pinned-post @endif" data="{{$response->id}}" @if ($isSponsored) data-impression-url="{{ route('promoted-post.impression', $activePromotion->id) }}" @endif>
+	
 	<div class="card-body">
 		<div class="pinned_post text-muted small w-100 mb-2 {{ $response->fixed_post == '1' && request()->path() == $response->creator->username || auth()->check() && $response->fixed_post == '1' && $response->creator->id == auth()->user()->id ? 'pinned-current' : 'display-none' }}">
 			<i class="bi bi-pin mr-2"></i> {{ __('general.pinned_post') }}
@@ -124,10 +126,6 @@
 						<i class="bi bi-patch-check-fill"></i>
 					</small>
 				@endif
-
-				@if ($isSponsored)
-					<small class="text-muted ml-1"><i class="bi bi-globe mr-1"></i>Patrocinado</small>
-				@endif
 					
 					 @if(
 			auth()->check()
@@ -167,6 +165,7 @@
 				<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown_options">
 					@if (request()->path() != $response->creator->username.'/post/'.$response->id)
 						<a class="dropdown-item mb-1" href="{{ $isSponsored ? route('promoted-post.click', $activePromotion->id) : url($response->creator->username.'/post', $response->id) }}"><i class="bi bi-box-arrow-in-up-right mr-2"></i> {{__('general.go_to_post')}}</a>
+					
 					@endif
 
 					@if ($response->status == 'active')
@@ -187,7 +186,7 @@
 						{!! Form::close() !!}
 					@else
 						<button type="button" class="dropdown-item mb-1" data-toggle="modal" data-target="#promotePostModal-{{$response->id}}">
-							<i class="bi bi-megaphone mr-2"></i> Promover publicação
+							<i class="bi bi-megaphone mr-2"></i> Promover post
 						</button>
 					@endif
 
@@ -245,6 +244,7 @@
 
 						@if (request()->path() != $response->creator->username.'/post/'.$response->id)
 							<a class="dropdown-item" href="{{ $isSponsored ? route('promoted-post.click', $activePromotion->id) : url($response->creator->username.'/post', $response->id) }}">
+							
 								<i class="bi bi-box-arrow-in-up-right mr-2"></i> {{__('general.go_to_post')}}
 							</a>
 						@endif
@@ -327,8 +327,11 @@
 				@endif
 			</h5>
 
-				<small class="timeAgo text-muted" data="{{date('c', strtotime($response->date))}}"></small>
-
+			@if ($isSponsored)
+    <small class="text-muted"> Patrocinado </small>
+@else
+    <small class="timeAgo text-muted" data="{{ date('c', strtotime($response->date)) }}"></small>
+@endif
 				@if ($response->locked == 'no')
 				<small class="text-muted type-post" title="{{__('general.public')}}">
 					<i class="iconmoon icon-WorldWide mr-1"></i>
@@ -373,17 +376,33 @@
 						</button>
 					</div>
 					<div class="modal-body">
-						<div class="text-muted mb-2">Custo diário: <strong>2.000 Kz</strong></div>
-						<label for="days-{{$response->id}}">Nº de dias</label>
-						<input id="days-{{$response->id}}" type="number" name="days" min="1" max="365" value="1" class="form-control promo-days-input" data-target="#promo-total-{{$response->id}}" data-wallet="{{ auth()->user()->wallet }}" data-daily-price="2000">
-						<div class="mt-3 font-weight-bold">Total: <span id="promo-total-{{$response->id}}">2.000 Kz</span></div>
-						<div class="alert alert-danger promo-insufficient-funds mt-3 mb-0 @if (auth()->user()->wallet >= 2000) d-none @endif" role="alert">
+						
+						<div class="text-muted mb-2">Objectivo</div>
+						
+						<div class="promotion-content mb-3">
+        <div class="promotion-text">
+            Mostra o teu anúncio a pessoas com maior probabilidade de reagirem, comentarem e partilharem.
+        </div>
+    </div>
+			<div class="text-muted mb-2">Duração</div>
+						
+						<div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span style=" font-size: 13px!important; font-weight: 400; " for="days-{{$response->id}}" class="input-group-text pr-0">Dias</span>
+            </div>
+				<input style=" padding-left: 8px!important; " id="days-{{$response->id}}" type="number" name="days" min="1" max="365" value="1" class="form-control promo-days-input" data-target="#promo-total-{{$response->id}}" data-wallet="{{ auth()->user()->wallet }}" data-daily-price="1000">
+            </div>
+						
+					<div class="text-muted mb-1">Orçamento total</div>
+					
+						<div class="mt-1 font-weight-bold"><span style="font-size: 20px;" id="promo-total-{{$response->id}}">1.000 Kz</span></div>
+						<div class="alert alert-danger promo-insufficient-funds mt-3 mb-0 @if (auth()->user()->wallet >= 1000) d-none @endif" role="alert">
 							Saldo insuficiente, por favor carregue a carteira.
 						</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancelar</button>
-						<button type="submit" class="btn btn-primary btn-sm promo-confirm-button" @if (auth()->user()->wallet < 2000) disabled @endif>Confirmar</button>
+						<button type="button" class="btn btn-google btn-sm" data-dismiss="modal">Cancelar</button>
+						<button type="submit" class="btn btn-primary btn-sm promo-confirm-button" @if (auth()->user()->wallet < 1000) disabled @endif>Confirmar</button>
 					</div>
 				</form>
 			</div>
@@ -618,6 +637,23 @@
 
 @if ($response->status == 'active')
 <div class="card-footer bg-white border-top-0 rounded-large">
+	@if (auth()->check() && auth()->user()->id == $response->creator->id && ! $activePromotion)
+	<div class="promotion-banner mb-3">
+    <div class="promotion-content">
+
+		<i class="bi bi-megaphone mr-2 promotion-icon"></i>
+
+        <div class="promotion-text">
+            Promove esta publicação<br>
+            para obteres mais alcance<br>
+        </div>
+
+    </div>
+			<button type="button" class="btn btn-outline-primary btn-sm ml-3 d-inline-flex align-items-center" data-toggle="modal" data-target="#promotePostModal-{{$response->id}}"> Promover post
+				</button>
+</div>
+@endif
+
     <h4 style="line-height: 0px!important;display: flex;" class="mb-3">
 			@php
 			$likeActive = auth()->check() && auth()->user()->likes()->where('updates_id', $response->id)->where('status','1')->first();
@@ -656,16 +692,6 @@
 			<span class="@auth @if (auth()->user()->checkRestriction($response->creator->id) || !$response->creator->allow_comments) buttonDisabled @else text-muted @endif @else text-muted @endauth disabled mr-14px @auth @if (! isset($inPostDetail) && $buttonLike) pulse-btn toggleComments @endif @endauth">
 				<i class="feather icon-message-circle"></i>
 			</span>
-		
-			@if (auth()->check() && auth()->user()->role == 'admin')
-		
-		@if (auth()->check() && auth()->user()->id == $response->creator->id && ! $activePromotion)
-				<button type="button" class="btn btn-outline-primary btn-sm ml-3 d-inline-flex align-items-center" data-toggle="modal" data-target="#promotePostModal-{{$response->id}}">
-					<i class="bi bi-megaphone mr-2"></i> Promover Publicação
-				</button>
-			@endif
-		
-		@endif
 
 	@auth
 		@if (auth()->user()->id != $response->creator->id
@@ -944,7 +970,7 @@ document.addEventListener('input', function(event) {
 
 	const days = Number(event.target.value || 0);
 	const wallet = Number(event.target.dataset.wallet || 0);
-	const dailyPrice = Number(event.target.dataset.dailyPrice || 2000);
+	const dailyPrice = Number(event.target.dataset.dailyPrice || 1000);
 	const total = days * dailyPrice;
 	const target = document.querySelector(event.target.dataset.target);
 	const form = event.target.closest('form');

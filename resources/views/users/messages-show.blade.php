@@ -136,13 +136,13 @@
   </div>
 </div>
 
-	  @elseif (auth()->user()->wallet == 0 && in_array(auth()->user()->verified_id, ['no', 'reject']))
+	  @elseif (auth()->user()->is_pro == 0 && in_array(auth()->user()->verified_id, ['no', 'reject']))
 	 <div class="card-footer bg-white position-relative">
 		  
 		  <div class="bg-white position-relative">
         <div class="alert alert-primary m-0 alert-dismissible fade show" role="alert">
           <i class="fa fa-info-circle mr-2"></i>
-          Tenha mínimo de saldo na sua carteira para poder conversar com qualquer utilizador.
+          Deve se tornar <a href="{{ url(auth()->user()->username) }}">Pro <i style="font-size: 11px;color: #fd7350;" class="bi-star-fill mr-1"></i></a> para conseguir conversar com qualquer utilizador.
         </div>
       </div>
 	</div>
