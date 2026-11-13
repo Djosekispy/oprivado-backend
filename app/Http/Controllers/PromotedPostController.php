@@ -18,41 +18,30 @@ class PromotedPostController extends Controller
 {
     public const DAILY_PRICE = 2000.00;
 
-    public function randomComponent(): Response
-    {
-        $country = Helper::userCountry();
+public function randomComponent(): Response
+{
+    $promotion = PromotedPost::query()
+        ->where('status', 'active')
+        ->where('starts_at', '<=', now())
+        ->where('ends_at', '>', now())
+        ->whereHas('post', fn (Builder $q) => $q->where('status', 'active'))
+		->whereHas('post', function (Builder $q) {
+			$q->where('status', 'active')
+			  ->whereHas('creator', fn (Builder $c) => $c->where('status', 'active'));
+		})
+		->with('post.creator')
+        ->with('post')
+        ->inRandomOrder()
+        ->first();
 
-        $promotion = PromotedPost::query()
-            ->where('status', 'active')
-            ->where('starts_at', '<=', now())
-            ->where('ends_at', '>', now())
-            ->whereHas('post', function (Builder $postQuery) use ($country) {
-                $postQuery->where('status', 'active')
-                    ->whereHas('creator', function (Builder $creatorQuery) use ($country) {
-                        $creatorQuery->where('status', 'active');
-
-                        if ($country) {
-                            $creatorQuery->where(function (Builder $countryQuery) use ($country) {
-                                $countryQuery->whereNull('blocked_countries')
-                                    ->orWhere('blocked_countries', 'NOT LIKE', '%' . $country . '%');
-                            });
-                        }
-                    });
-            })
-            ->with(['post' => function (Builder $postQuery) {
-                $postQuery->getSelectRelations();
-            }])
-            ->inRandomOrder()
-            ->first();
-
-        if (! $promotion || ! $promotion->post) {
-            return response('', 204);
-        }
-
-        return response()->view('includes.updates', [
-            'updates' => collect([$promotion->post]),
-        ]);
+    if (! $promotion || ! $promotion->post) {
+        return response('', 204);
     }
+
+    return response()->view('includes.updates', [
+        'updates' => collect([$promotion->post]),
+    ]);
+}
 
     public function trackImpression(PromotedPost $promotion): Response
     {

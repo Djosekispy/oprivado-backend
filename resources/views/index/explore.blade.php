@@ -69,26 +69,6 @@
           </div><!--  end d-lg-flex -->
           @endauth
 			
-			@if ($settings->live_streaming_status == 'on') 
-							
-							@php
-								$liveService = app(\App\Services\LiveService::class);
-								$activeLives = $liveService->countActiveLives() ?? 0;
-							@endphp
-
-							@if($activeLives > 0)
-								<a class="text-decoration-none" href="{{ url('explore/creators/live') }}"> <div style="border-radius: 4px;" class="p-3 mb-4 border container-phone"> <div class="become-creator__row">
-                                                    <i style="font-size: 30px; color: red; animation: pulseLives 1.2s infinite;" class="feather icon-radio mr-3"></i>
-                                                    <div style="margin-left: 4px;">
-                                                        <div style="font-weight: 500;" class="fw-bold text-black">
-                                                             <span>Criadores estão em directo</span></div>
-                                                        <small class="text-muted"> junte-se na live agora mesmo</small>
-                                                    </div>
-           </div> </div></a> 
-							@endif
-							
-					@endif
-
 			@include('includes.featured-top-creator')
 
           <div class="grid-updates position-relative" id="updatesPaginator">
@@ -185,6 +165,7 @@ document.addEventListener('click', (e) => {
     }
 });
 </script>
+ 
 
 <script>
 (() => {
@@ -195,7 +176,7 @@ document.addEventListener('click', (e) => {
 
     const pendingPosts = [];
     const processedPosts = new WeakSet();
-    const observedPromotions = new WeakSet();
+	 const observedPromotions = new WeakSet();
     const csrfMeta = document.querySelector('meta[name="csrf-token"]');
     const csrfToken = csrfMeta ? csrfMeta.content : '';
     let postsSincePromotion = 0;
@@ -204,8 +185,9 @@ document.addEventListener('click', (e) => {
     let noMorePromotions = false;
 
     function randomInterval() {
-        const intervals = [4, 6, 8];
+		const intervals = [4, 6, 8];
         return intervals[Math.floor(Math.random() * intervals.length)];
+    
     }
 
     function recordImpression(card) {
@@ -242,8 +224,8 @@ document.addEventListener('click', (e) => {
 
         observer.observe(card);
     }
-
-    function observePromotion(card) {
+	
+	   function observePromotion(card) {
         if (observedPromotions.has(card)) {
             return;
         }
@@ -262,19 +244,32 @@ document.addEventListener('click', (e) => {
 
         if (response.status === 204) {
             noMorePromotions = true;
-            console.log('Nenhuma publicação patrocinada elegível encontrada.');
+			  console.log('Nenhuma publicação patrocinada elegível encontrada.');
             return;
         }
 
         if (!response.ok) {
-            throw new Error(`Pedido de publicação patrocinada falhou: ${response.status}`);
+           const contentType = response.headers.get('content-type') || '';
+            let details = 'O servidor não devolveu detalhes do erro.';
+
+            if (contentType.includes('application/json')) {
+                const errorResponse = await response.json();
+                details = errorResponse.error || errorResponse.message || details;
+            }
+
+            console.error('Resposta do endpoint de publicações patrocinadas:', {
+                status: response.status,
+                details
+            });
+            throw new Error(`Pedido de publicação patrocinada falhou: ${response.status}. ${details}`);
+        
         }
 
         const template = document.createElement('template');
         template.innerHTML = (await response.text()).trim();
         const card = template.content.firstElementChild;
-        console.log('Publicação patrocinada recebida:', card);
-
+		
+		
         if (!card || !card.classList.contains('card-updates') || !card.dataset.impressionUrl) {
             throw new Error('A resposta AJAX da promoção não contém o componente esperado.');
         }
@@ -321,11 +316,10 @@ document.addEventListener('click', (e) => {
         posts.push(...node.querySelectorAll('.card-updates'));
 
         posts.forEach(post => {
-            if (post.dataset.impressionUrl) {
+			 if (post.dataset.impressionUrl) {
                 observePromotion(post);
                 return;
             }
-
             if (!processedPosts.has(post)) {
                 processedPosts.add(post);
                 pendingPosts.push(post);
@@ -335,7 +329,8 @@ document.addEventListener('click', (e) => {
         processPosts();
     }
 
-    feed.querySelectorAll('.card-updates[data-impression-url]').forEach(observePromotion);
+ feed.querySelectorAll('.card-updates[data-impression-url]').forEach(observePromotion);
+    
     feed.querySelectorAll('.card-updates').forEach(enqueuePosts);
 
     new MutationObserver(mutations => {
