@@ -616,7 +616,7 @@ public function feed(?int $skip = null)
       return false;
     }
 
-    $expired = DB::transaction(function () {
+    $expiredUserId = DB::transaction(function () {
       $user = static::whereKey($this->getKey())
         ->where('is_pro', true)
         ->whereNotNull('pro_expires_at')
@@ -628,22 +628,31 @@ public function feed(?int $skip = null)
         return false;
       }
 
-      Notifications::send($user->id, $user->id, 27, 0);
-
       $user->update([
         'is_pro' => false,
         'pro_started_at' => null,
         'pro_expires_at' => null,
       ]);
 
-      return true;
+      return $user->id;
     });
 
-    if ($expired) {
-      $this->refresh();
+    if (! $expiredUserId) {
+      return false;
     }
 
-    return $expired;
+    $this->refresh();
+
+    try {
+      Notifications::send($expiredUserId, $expiredUserId, 27, 0);
+    } catch (\Throwable $exception) {
+      \Log::error('Failed to send Pro expiration notification.', [
+        'user_id' => $expiredUserId,
+        'exception' => $exception,
+      ]);
+    }
+
+    return true;
   }
 
   public function activatePro($days = 31)
