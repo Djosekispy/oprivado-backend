@@ -234,6 +234,25 @@ document.addEventListener('click', (e) => {
         recordImpression(card);
     }
 
+    function initializePromotionMedia(card) {
+        const initialize = () => {
+            if (!window.lightbox || typeof window.Plyr !== 'function') {
+                console.error('Não foi possível inicializar a galeria ou o reprodutor da publicação patrocinada.');
+                return;
+            }
+
+            window.lightbox.reload();
+            card.querySelectorAll('video.js-player').forEach(video => new window.Plyr(video));
+        };
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('load', initialize, { once: true });
+            return;
+        }
+
+        initialize();
+    }
+
     async function insertPromotionAfter(post) {
         const endpoint = new URL(@json(route('promoted-post.random')), window.location.origin);
         const response = await fetch(endpoint.toString(), {
@@ -275,6 +294,7 @@ document.addEventListener('click', (e) => {
         }
 
         post.insertAdjacentElement('afterend', card);
+        initializePromotionMedia(card);
         observePromotion(card);
     }
 

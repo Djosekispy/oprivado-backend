@@ -44,7 +44,7 @@
 @endif
 
 <script type="text/javascript">
-const lightbox = GLightbox({
+window.lightbox = GLightbox({
     touchNavigation: true,
     loop: false,
     closeEffect: 'fade'
