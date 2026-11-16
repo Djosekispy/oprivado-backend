@@ -294,7 +294,7 @@ document.addEventListener('click', (e) => {
         }
 
         post.insertAdjacentElement('afterend', card);
-        initializePromotionMedia(card);
+		 initializePromotionMedia(card);
         observePromotion(card);
     }
 

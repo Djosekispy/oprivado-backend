@@ -895,29 +895,6 @@
 
 @endforeach
 
-		@if (session('promotion_success'))
-	<script>
-		swal({
-			title: @json(__('general.thanks')),
-			text: @json(session('promotion_success')),
-			type: 'success',
-			confirmButtonText: @json(__('users.ok'))
-		});
-	</script>
-@endif
-
-@if (session('promotion_error') || $errors->has('days'))
-	<script>
-		swal({
-			title: @json(__('general.error_oops')),
-			text: @json(session('promotion_error') ?: $errors->first('days')),
-			type: 'error',
-			confirmButtonText: @json(__('users.ok'))
-		});
-	</script>
-@endif
-
-
 @if (! isset($singlePost))
 <div class="card mb-3 pb-4 loadMoreSpin d-none rounded-large shadow-large">
 	<div class="card-body">

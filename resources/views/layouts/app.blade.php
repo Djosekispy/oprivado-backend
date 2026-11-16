@@ -1235,6 +1235,26 @@ window.addEventListener('load', function () {
 
   @yield('javascript')
 
+@if (session('promotion_success'))
+  <script>
+    swal({
+      title: @json(__('general.thanks')),
+      text: @json(session('promotion_success')),
+      type: 'success',
+      confirmButtonText: @json(__('users.ok'))
+    });
+  </script>
+@elseif (session('promotion_error') || $errors->has('days'))
+  <script>
+    swal({
+      title: @json(__('general.error_oops')),
+      text: @json(session('promotion_error') ?: $errors->first('days')),
+      type: 'error',
+      confirmButtonText: @json(__('users.ok'))
+    });
+  </script>
+@endif
+
 @auth
   <div id="bodyContainer"></div>
 	 @include('includes.choose-sensitive')
