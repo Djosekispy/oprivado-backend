@@ -31,7 +31,7 @@
 
 <p>Apesar de ser uma plataforma para maiores de 18 anos, o foco é dar maior liberdade e segurança para os criadores ao se comunicarem com suas comunidades. É possível criar conta em diversas áreas como: Fitness; Cosplay; Moda; Viagens; Tutoriais; Beleza e cuidados pessoais; Videogames; Conteúdo adulto; Receitas; Humor e Vlogs.</p>
 
-<p>Toda vez que uma pessoa paga pelo conteúdo, o criador recebe maior percentagem desse valor e a plataforma retém a outra pequena percentagem para manutenção da plataforma, o que inclui pagamento de impostos ao Estado, taxas do Banco, serviços de Publicidade e Marketing, custos do servidor e armazenamento de dados e serviços terceiros integrados no Oprivado. Os ganhos dos criadores de conteúdos são pagos em kwanzas directamente na sua conta bancaria dentro de 2 à 5 dias dependendo de seu Banco de apoio.</p>
+<p>Toda vez que uma pessoa paga pelo conteúdo, o criador recebe maior percentagem desse valor e a plataforma retém a outra pequena percentagem para manutenção da plataforma, o que inclui pagamento de impostos ao Estado, taxas do Banco, serviços de Publicidade e Marketing, custos do servidor e armazenamento de dados e serviços terceiros integrados no Oprivado. Os ganhos dos criadores de conteúdos são pagos em kwanzas directamente na sua conta bancaria dentro de 5 à 10 dias dependendo de seu Banco de apoio.</p>
 
 <p>Além das assinaturas e das publicações, existem diversas formas de ganhar dinheiro no Oprivado. A melhor parte é que no Oprivado, o próprio criador é que define os valores dos seus conteúdos.</p>
 			  

@@ -1235,7 +1235,7 @@ window.addEventListener('load', function () {
 
   @yield('javascript')
 
-@if (session('promotion_success'))
+	@if (session('promotion_success'))
   <script>
     swal({
       title: @json(__('general.thanks')),
@@ -1255,6 +1255,7 @@ window.addEventListener('load', function () {
   </script>
 @endif
 
+	
 @auth
   <div id="bodyContainer"></div>
 	 @include('includes.choose-sensitive')
