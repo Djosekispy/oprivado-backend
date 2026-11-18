@@ -603,6 +603,7 @@
               </span>
             <h4 class="font-weight-light">{{__('general.no_posts_posted')}}</h4>
             </div>
+            @include('includes.promoted-post')
           @else
 
             @if (! request()->get('sort') && $totalPosts > $settings->number_posts_show || request()->get('sort'))
@@ -675,9 +676,14 @@
 		  
 		   <div class="grid-updates position-relative" id="updatesPaginator">
           @include('includes.updates')
+          @include('includes.promoted-post')
         </div>
 		  
         @endif   
+
+        @if (auth()->guest() && $updates->count() != 0)
+          @include('includes.promoted-post')
+        @endif
 
           @endif
       </div>
