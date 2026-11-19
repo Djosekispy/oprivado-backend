@@ -296,7 +296,8 @@ class MessagesController extends Controller
 
     // Setup the validator
     $rules = [
-      'message' => 'required|min:1|max:' . config('settings.comment_length') . '',
+      'message' => 'nullable|string|min:1|max:' . config('settings.comment_length'),
+      'voice_token' => 'nullable|string|max:255',
       'zip'    => 'mimes:zip|max:' . config('settings.file_size_allowed') . '',
       'epub'    => 'mimes:epub,zip|max:' . config('settings.file_size_allowed') . '',
       'price'  => 'numeric|min:' . config('settings.min_ppv_amount') . '|max:' . config('settings.max_ppv_amount'),
@@ -312,15 +313,47 @@ class MessagesController extends Controller
       ));
     }
 
+    $voiceToken = trim((string) $request->input('voice_token', ''));
+    $voiceMedia = null;
+
+    if ($voiceToken !== '') {
+      $voiceMedia = MediaMessages::where('token', $voiceToken)
+        ->where('messages_id', 0)
+        ->where('status', 'pending')
+        ->first();
+
+      if (!$voiceMedia || strpos($voiceToken, auth()->id() . ':') !== 0) {
+        return response()->json([
+          'success' => false,
+          'errors' => ['voice_token' => ['A gravação de áudio não é válida.']]
+        ]);
+      }
+    }
+
+    $messageText = trim((string) $request->input('message', ''));
+    if ($messageText === '' && !$voiceMedia) {
+      return response()->json([
+        'success' => false,
+        'errors' => ['message' => [__('validation.required', ['attribute' => 'mensagem'])]]
+      ]);
+    }
+
     $message = new Messages();
     $message->conversations_id = 0;
     $message->from_user_id    = auth()->id();
     $message->to_user_id      = $user->id;
-    $message->message         = trim(Helper::checkTextDb($request->get('message')));
+    $message->message         = $messageText === '' ? '' : trim(Helper::checkTextDb($messageText));
     $message->updated_at      = now();
     $message->price           = $request->price;
     $message->mode            = 'pending';
     $message->save();
+
+    if ($voiceMedia) {
+      $voiceMedia->update([
+        'messages_id' => $message->id,
+        'status' => 'active'
+      ]);
+    }
 
     // Insert Files
     $fileuploader = $request->input('fileuploader-list-media');

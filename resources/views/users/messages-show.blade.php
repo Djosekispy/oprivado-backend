@@ -170,8 +170,9 @@
              <ul class="list-unstyled m-0" id="showErrorMsg"></ul>
            </div><!-- Alert -->
 
-            <form action="{{url('message/send')}}" method="post" accept-charset="UTF-8" id="formSendMsg" enctype="multipart/form-data">
+            <form action="{{url('message/send')}}" method="post" accept-charset="UTF-8" id="formSendMsg" data-voice-upload-url="{{route('upload.message.voice')}}" enctype="multipart/form-data">
               <input type="hidden" name="id_user" id="id_user" value="{{$user->id}}">
+              <input type="hidden" name="voice_token" id="voiceMessageToken" value="">
               <input type="hidden" name="_token" value="{{ csrf_token() }}">
               <input type="file" name="zip" id="zipFile" accept="application/x-zip-compressed" class="visibility-hidden">
 
@@ -204,6 +205,14 @@
                 <a href="javascript:void(0)" id="removeEpub" class="text-danger p-1 small display-none btn-tooltip-form" data-toggle="tooltip" data-placement="top" title="{{__('general.delete')}}"><i class="fa fa-times-circle"></i></a>
               </div>
 
+              <div id="voiceMessagePreview" class="w-100 mb-2 display-none">
+                <audio id="voiceMessageAudio" class="w-100" controls></audio>
+                <button type="button" id="discardVoiceMessage" class="btn btn-link text-danger p-0 small">
+                  <i class="fa fa-times-circle"></i> Remover áudio
+                </button>
+              </div>
+              <div id="voiceMessageError" class="text-danger small mb-2 display-none" role="alert"></div>
+
               <input type="file" name="media[]" id="file" accept="image/*,video/mp4,video/x-m4v,video/quicktime,audio/mp3" multiple class="visibility-hidden filepond">
 
               <div class="justify-content-between mt-3 align-items-center">
@@ -211,6 +220,19 @@
                     <button type="button" class="btnMultipleUpload btn btn-upload btn-tooltip e-none align-bottom @if (auth()->user()->dark_mode == 'off') text-primary @else text-white @endif rounded-pill" data-toggle="tooltip" data-placement="top" title="{{__('general.upload_media')}} ({{ __('general.media_type_upload') }})">
                       <i class="feather text-black icon-image align-bottom f-size-25"></i> <span style="margin-top:2px; font-size: 10px; font-weight: 300; color: black; ">Ficheiro</span>
                     </button>
+
+                    <button type="button" id="recordVoiceMessage" class="btn btn-upload btn-tooltip e-none align-bottom @if (auth()->user()->dark_mode == 'off') text-primary @else text-white @endif rounded-pill" data-toggle="tooltip" data-placement="top" title="Gravar áudio" aria-label="Gravar áudio">
+                      <i class="feather icon-mic align-bottom f-size-25"></i>
+                    </button>
+                    <div id="voiceRecordingControls" class="d-inline-flex align-items-center display-none">
+                      <small class="text-muted mr-2">A gravar áudio...</small>
+                      <button type="button" id="stopVoiceRecording" class="btn btn-upload e-none align-bottom @if (auth()->user()->dark_mode == 'off') text-primary @else text-white @endif rounded-pill" title="Parar gravação" aria-label="Parar gravação">
+                        <i class="feather icon-square align-bottom"></i>
+                      </button>
+                      <button type="button" id="cancelVoiceRecording" class="btn btn-upload e-none align-bottom @if (auth()->user()->dark_mode == 'off') text-primary @else text-white @endif rounded-pill" title="Cancelar gravação" aria-label="Cancelar gravação">
+                        <i class="feather icon-x align-bottom"></i>
+                      </button>
+                    </div>
 
                     @if ($settings->allow_zip_files)
                     <button type="button" class="btn btn-upload btn-tooltip e-none align-bottom @if (auth()->user()->dark_mode == 'off') text-primary @else text-white @endif rounded-pill" data-toggle="tooltip" data-placement="top" title="{{__('general.upload_file_zip')}}" onclick="$('#zipFile').trigger('click')">
@@ -296,6 +318,267 @@
 <script src="{{ asset('public/js/messages.js') }}?v={{$settings->version}}"></script>
 <script src="{{ asset('public/js/fileuploader/fileuploader-msg.js') }}?v={{$settings->version}}"></script>
 <script src="{{ asset('public/js/paginator-messages.js') }}"></script>
+<script>
+(function () {
+  const form = document.getElementById('formSendMsg');
+  if (!form) return;
+
+  const recordButton = document.getElementById('recordVoiceMessage');
+  const recordingControls = document.getElementById('voiceRecordingControls');
+  const stopButton = document.getElementById('stopVoiceRecording');
+  const cancelButton = document.getElementById('cancelVoiceRecording');
+  const preview = document.getElementById('voiceMessagePreview');
+  const audioPreview = document.getElementById('voiceMessageAudio');
+  const discardButton = document.getElementById('discardVoiceMessage');
+  const errorMessage = document.getElementById('voiceMessageError');
+  const tokenInput = document.getElementById('voiceMessageToken');
+  const messageInput = document.getElementById('message');
+  const sendButton = document.getElementById('button-reply-msg');
+
+  let activeRecording = null;
+  let voiceBlob = null;
+  let voiceExtension = null;
+  let previewUrl = null;
+  let uploading = false;
+  let startingRecording = false;
+
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.classList.remove('display-none');
+  }
+
+  function clearError() {
+    errorMessage.textContent = '';
+    errorMessage.classList.add('display-none');
+  }
+
+  function hasOtherAttachment() {
+    const fileList = form.querySelector('input[name="fileuploader-list-media"]');
+    if (fileList && fileList.value) {
+      try {
+        const files = JSON.parse(fileList.value);
+        if (Array.isArray(files) && files.length) return true;
+      } catch (error) {
+        return true;
+      }
+    }
+
+    return Array.from(form.querySelectorAll('input[type="file"]'))
+      .some(function (input) { return input.files && input.files.length > 0; });
+  }
+
+  function updateSendButton() {
+    if (!sendButton) return;
+    const hasText = messageInput.value.trim().length > 0;
+    sendButton.disabled = !(hasText || voiceBlob || tokenInput.value || hasOtherAttachment());
+  }
+
+  function stopTracks(stream) {
+    stream.getTracks().forEach(function (track) { track.stop(); });
+  }
+
+  function clearVoiceMessage() {
+    if (activeRecording) {
+      const recording = activeRecording;
+      activeRecording = null;
+      recording.cancelled = true;
+      if (recording.recorder.state !== 'inactive') recording.recorder.stop();
+      stopTracks(recording.stream);
+    }
+
+    voiceBlob = null;
+    voiceExtension = null;
+    tokenInput.value = '';
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = null;
+    audioPreview.removeAttribute('src');
+    audioPreview.load();
+    preview.classList.add('display-none');
+    recordingControls.classList.add('display-none');
+    recordButton.classList.remove('display-none');
+    clearError();
+    updateSendButton();
+  }
+
+  function getExtension(mimeType) {
+    const normalizedType = (mimeType || '').toLowerCase();
+    if (normalizedType.indexOf('audio/webm') === 0 || normalizedType.indexOf('video/webm') === 0) return 'webm';
+    if (normalizedType.indexOf('audio/ogg') === 0 || normalizedType.indexOf('application/ogg') === 0) return 'ogg';
+    if (normalizedType.indexOf('audio/mp4') === 0 || normalizedType.indexOf('audio/x-m4a') === 0) return 'm4a';
+    if (normalizedType.indexOf('audio/mpeg') === 0) return 'mp3';
+    return null;
+  }
+
+  async function startRecording() {
+    if (activeRecording || startingRecording) return;
+    clearError();
+    if (voiceBlob || tokenInput.value) clearVoiceMessage();
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+      showError('A gravação de áudio requer um navegador compatível e uma ligação segura (HTTPS).');
+      return;
+    }
+
+    startingRecording = true;
+    recordButton.disabled = true;
+    let stream = null;
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const preferredFormats = [
+        'audio/webm;codecs=opus',
+        'audio/ogg;codecs=opus',
+        'audio/mp4'
+      ];
+      const supportedFormat = preferredFormats.find(function (format) {
+        return MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(format);
+      });
+      const recorder = supportedFormat
+        ? new MediaRecorder(stream, { mimeType: supportedFormat })
+        : new MediaRecorder(stream);
+      const recording = { recorder: recorder, stream: stream, chunks: [], cancelled: false };
+      activeRecording = recording;
+
+      recorder.addEventListener('dataavailable', function (event) {
+        if (event.data && event.data.size) recording.chunks.push(event.data);
+      });
+
+      recorder.addEventListener('stop', function () {
+        stopTracks(stream);
+        if (activeRecording === recording) activeRecording = null;
+        recordingControls.classList.add('display-none');
+        recordButton.classList.remove('display-none');
+
+        if (recording.cancelled) return;
+
+        const blob = new Blob(recording.chunks, { type: recorder.mimeType || supportedFormat || '' });
+        const extension = getExtension(blob.type);
+        if (!blob.size || !extension) {
+          showError('Não foi possível criar um ficheiro de áudio compatível.');
+          updateSendButton();
+          return;
+        }
+
+        voiceBlob = blob;
+        voiceExtension = extension;
+        previewUrl = URL.createObjectURL(blob);
+        audioPreview.src = previewUrl;
+        preview.classList.remove('display-none');
+        updateSendButton();
+      });
+
+      recorder.start();
+      recordButton.classList.add('display-none');
+      recordingControls.classList.remove('display-none');
+      recordButton.disabled = false;
+      startingRecording = false;
+    } catch (error) {
+      if (activeRecording && activeRecording.stream === stream) activeRecording = null;
+      if (stream) stopTracks(stream);
+      recordButton.disabled = false;
+      startingRecording = false;
+      showError('Não foi possível aceder ao microfone. Verifique as permissões do navegador.');
+    }
+  }
+
+  function cancelRecording() {
+    if (activeRecording) {
+      const recording = activeRecording;
+      activeRecording = null;
+      recording.cancelled = true;
+      if (recording.recorder.state !== 'inactive') recording.recorder.stop();
+      stopTracks(recording.stream);
+    }
+    recordingControls.classList.add('display-none');
+    recordButton.classList.remove('display-none');
+    clearError();
+    updateSendButton();
+  }
+
+  recordButton.addEventListener('click', startRecording);
+  stopButton.addEventListener('click', function () {
+    if (activeRecording && activeRecording.recorder.state !== 'inactive') {
+      activeRecording.recorder.stop();
+    }
+  });
+  cancelButton.addEventListener('click', cancelRecording);
+  discardButton.addEventListener('click', clearVoiceMessage);
+  messageInput.addEventListener('input', updateSendButton);
+
+  function uploadVoiceAndSubmit() {
+    if (uploading) return;
+    uploading = true;
+    sendButton.disabled = true;
+
+    const formData = new FormData();
+    formData.append('audio', voiceBlob, 'voice-message.' + voiceExtension);
+    formData.append('_token', form.querySelector('input[name="_token"]').value);
+
+    fetch(form.dataset.voiceUploadUrl, {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(async function (response) {
+        let result;
+        try {
+          result = await response.json();
+        } catch (error) {
+          throw new Error('Não foi possível enviar a gravação de áudio.');
+        }
+        if (!response.ok || !result.success || !result.token) {
+          throw new Error(result.message || 'Não foi possível enviar a gravação de áudio.');
+        }
+        tokenInput.value = result.token;
+        updateSendButton();
+        sendButton.click();
+      })
+      .catch(function (error) {
+        showError(error.message || 'Não foi possível enviar a gravação de áudio.');
+        updateSendButton();
+      })
+      .finally(function () {
+        uploading = false;
+      });
+  }
+
+  sendButton.addEventListener('click', function (event) {
+    if (!voiceBlob || tokenInput.value) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    uploadVoiceAndSubmit();
+  }, true);
+
+  form.addEventListener('submit', function (event) {
+    if (!voiceBlob || tokenInput.value) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    uploadVoiceAndSubmit();
+  }, true);
+
+  form.addEventListener('reset', clearVoiceMessage);
+  window.addEventListener('pagehide', function () {
+    if (activeRecording) stopTracks(activeRecording.stream);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  });
+
+  if (window.jQuery) {
+    window.jQuery(document).on('ajaxSuccess.voiceMessage', function (event, xhr, settings) {
+      if (
+        settings.url &&
+        settings.url.indexOf('message/send') !== -1 &&
+        xhr.responseJSON &&
+        xhr.responseJSON.success
+      ) {
+        clearVoiceMessage();
+      }
+    });
+  }
+
+  updateSendButton();
+})();
+</script>
 
 @if ($user->verified_id == 'yes' 
             && $settings->live_streaming_private == 'on' 

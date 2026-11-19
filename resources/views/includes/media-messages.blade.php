@@ -88,8 +88,18 @@
 
 	@if ($media->type == 'music')
 	<div class="wrapper-media-music @if ($mediaCount >= 2) mt-2 @endif">
+		@php
+			$audioExtension = strtolower(pathinfo($media->file, PATHINFO_EXTENSION));
+			$audioMimeTypes = [
+				'webm' => 'audio/webm',
+				'ogg' => 'audio/ogg',
+				'm4a' => 'audio/mp4',
+				'mp3' => 'audio/mpeg',
+				'mka' => 'audio/x-matroska',
+			];
+		@endphp
 		<audio class="js-player {{$classInvisible}}" preload="metadata" controls>
-		<source src="{{Helper::getFile(config('path.messages').$media->file)}}" type="audio/mp3">
+		<source src="{{Helper::getFile(config('path.messages').$media->file)}}" type="{{$audioMimeTypes[$audioExtension] ?? 'audio/mpeg'}}">
 		Your browser does not support the audio tag.
 	</audio>
 </div>

@@ -98,6 +98,50 @@ class UploadMediaMessageController extends Controller
 		return response()->json($upload);
 	}
 
+	public function storeVoice(Request $request)
+	{
+		$maxFileSize = max(1, (int) config('settings.file_size_allowed'));
+
+		$request->validate([
+			'audio' => [
+				'required',
+				'file',
+				'max:' . $maxFileSize,
+				'mimes:webm,ogg,m4a,mp3',
+				'mimetypes:audio/webm,video/webm,audio/ogg,application/ogg,audio/mp4,audio/x-m4a,audio/mpeg'
+			]
+		]);
+
+		$audio = $request->file('audio');
+		$extension = strtolower($audio->getClientOriginalExtension());
+		if (!in_array($extension, ['webm', 'ogg', 'm4a', 'mp3'], true)) {
+			abort(422, 'Formato de áudio não suportado.');
+		}
+
+		$fileName = strtolower(auth()->id() . uniqid() . time() . str_random(20)) . '.' . $extension;
+		$token = auth()->id() . ':' . str_random(150) . uniqid() . now()->timestamp;
+
+		if (!Storage::putFileAs($this->path, $audio, $fileName)) {
+			abort(500, 'Não foi possível guardar a gravação de áudio.');
+		}
+
+		$media = MediaMessages::create([
+			'messages_id' => 0,
+			'type' => 'music',
+			'file' => $fileName,
+			'file_name' => '',
+			'file_size' => '',
+			'token' => $token,
+			'status' => 'pending',
+			'created_at' => now()
+		]);
+
+		return response()->json([
+			'success' => true,
+			'token' => $media->token
+		], 201);
+	}
+
 	/**
 	 * Resize image and add watermark
 	 *

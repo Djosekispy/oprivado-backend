@@ -508,6 +508,7 @@ Route::get('verify/account/{confirmation_code}', [HomeController::class, 'getVer
 	Route::post('delete/media',[UploadMediaController::class, 'delete']);
 
 	Route::any('upload/media/message',[UploadMediaMessageController::class, 'store']); 
+	Route::post('upload/media/message/voice', [UploadMediaMessageController::class, 'storeVoice'])->name('upload.message.voice');
 	Route::post('delete/media/message',[UploadMediaMessageController::class, 'delete']);
 
 	Route::post('new/message/massive', [MessagesController::class, 'sendMessageMassive']);
