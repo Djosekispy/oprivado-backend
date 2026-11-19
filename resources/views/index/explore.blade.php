@@ -242,7 +242,28 @@ document.addEventListener('click', (e) => {
             }
 
             window.lightbox.reload();
-            card.querySelectorAll('video.js-player').forEach(video => new window.Plyr(video));
+            card.querySelectorAll('video.js-player').forEach(video => {
+                const constrainVerticalVideo = () => {
+                    if (!video.videoWidth || video.videoHeight <= video.videoWidth) {
+                        return;
+                    }
+
+                    [
+                        video,
+                        video.closest('.plyr__video-wrapper'),
+                        video.closest('.plyr')
+                    ].forEach(element => {
+                        if (element) {
+                            element.style.setProperty('max-height', '70vh', 'important');
+                        }
+                    });
+                };
+
+                video.addEventListener('loadedmetadata', constrainVerticalVideo, { once: true });
+                new window.Plyr(video);
+                video.style.setProperty('object-fit', 'contain', 'important');
+                constrainVerticalVideo();
+            });
         };
 
         if (document.readyState === 'loading') {
