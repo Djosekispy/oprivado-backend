@@ -1215,6 +1215,11 @@ window.addEventListener('load', function () {
    @endif
 
     @include('includes.modal-payperview')
+    @include('includes.modal-post-video-limit')
+
+    @if (auth()->user()->verified_id !== 'yes')
+      @include('includes.modal-become-pro')
+    @endif
 
     @if ($settings->live_streaming_status == 'on')
       @include('includes.modal-live-stream')
@@ -1232,6 +1237,10 @@ window.addEventListener('load', function () {
 </main>
 
   @include('includes.javascript_general')
+
+  @auth
+    @include('includes.post-video-limit-script')
+  @endauth
 
   @yield('javascript')
 

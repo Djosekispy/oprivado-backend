@@ -22,6 +22,7 @@ use App\Http\Controllers\UpgradeController;
 use App\Http\Controllers\AddFundsController;
 use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\MessagesController;
+use App\Http\Controllers\PostVideoPlaybackController;
 use App\Http\Controllers\PaystackController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\TaxRatesController;
@@ -266,6 +267,8 @@ Route::get('verify/account/{confirmation_code}', [HomeController::class, 'getVer
 	 // Upload Cover
         Route::post('upload/cover', [UserController::class, 'uploadCover']);
 		Route::post('delete/cover', [UserController::class, 'deleteImageCover']);
+
+		Route::post('post-video/playback', PostVideoPlaybackController::class)->name('post-video.playback');
 
 	 // Dashboard
 	 Route::get('dashboard', [UserController::class, 'dashboard']);

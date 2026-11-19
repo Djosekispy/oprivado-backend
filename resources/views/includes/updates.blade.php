@@ -76,7 +76,10 @@
 		$countFilesAudio = $response->media->where('type', 'music')->count();
 		$mediaImageVideoTotal = $response->media->whereIn('type', ['image', 'video'])->count();
 
-		$isVideoEmbed = $response->media[0]->video_embed ?? false;
+		$videoEmbedMedia = $response->media->first(function ($media) {
+			return !empty($media->video_embed);
+		});
+		$isVideoEmbed = $videoEmbedMedia->video_embed ?? false;
 
 		$nth = 0; // nth foreach nth-child(3n-1)
 		
@@ -546,20 +549,26 @@
         @if ($isVideoEmbed)
 
             @if (in_array(Helper::videoUrl($isVideoEmbed), ['youtube.com','www.youtube.com','youtu.be','www.youtu.be','m.youtube.com']))
-                <div class="embed-responsive embed-responsive-16by9 mb-2">
-                    <iframe class="embed-responsive-item" height="360"
-                        src="https://www.youtube.com/embed/{{ Helper::getYoutubeId($isVideoEmbed) }}"
-                        allowfullscreen>
+                <div class="embed-responsive embed-responsive-16by9 mb-2 post-video-embed-wrapper">
+                    <iframe id="post-video-embed-{{$videoEmbedMedia->id}}" class="embed-responsive-item" height="360"
+                        src="https://www.youtube.com/embed/{{ Helper::getYoutubeId($isVideoEmbed) }}?enablejsapi=1&origin={{ urlencode(request()->getSchemeAndHttpHost()) }}"
+                        allow="autoplay; fullscreen" allowfullscreen style="pointer-events: none;">
                     </iframe>
+                    <button type="button" class="post-video-embed-gate" data-post-video-id="{{$videoEmbedMedia->id}}" data-post-video-embed-gate data-post-video-provider="youtube" data-post-video-iframe-id="post-video-embed-{{$videoEmbedMedia->id}}" aria-label="Iniciar vídeo">
+                        <span class="button-play"><i class="bi bi-play-fill text-white"></i></span>
+                    </button>
                 </div>
             @endif
 
             @if (in_array(Helper::videoUrl($isVideoEmbed), ['vimeo.com','player.vimeo.com']))
-                <div class="embed-responsive embed-responsive-16by9">
-                    <iframe class="embed-responsive-item"
-                        src="https://player.vimeo.com/video/{{ Helper::getVimeoId($isVideoEmbed) }}"
-                        allowfullscreen>
+                <div class="embed-responsive embed-responsive-16by9 post-video-embed-wrapper">
+                    <iframe id="post-video-embed-{{$videoEmbedMedia->id}}" class="embed-responsive-item"
+                        src="https://player.vimeo.com/video/{{ Helper::getVimeoId($isVideoEmbed) }}?api=1&player_id=post-video-embed-{{$videoEmbedMedia->id}}"
+                        allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="pointer-events: none;">
                     </iframe>
+                    <button type="button" class="post-video-embed-gate" data-post-video-id="{{$videoEmbedMedia->id}}" data-post-video-embed-gate data-post-video-provider="vimeo" data-post-video-iframe-id="post-video-embed-{{$videoEmbedMedia->id}}" aria-label="Iniciar vídeo">
+                        <span class="button-play"><i class="bi bi-play-fill text-white"></i></span>
+                    </button>
                 </div>
             @endif
 

@@ -1063,7 +1063,6 @@
   @endif
 
  @include('includes.modal-highlightProfile')
- @include('includes.modal-become-pro')
 
 <!-- Modal de aviso antes de trocar avatar -->
 <div class="modal fade" id="avatarWarningModal" tabindex="-1" role="dialog" aria-labelledby="avatarWarningLabel" aria-hidden="true">
@@ -1350,64 +1349,10 @@ $(document).ready(function() {
         });
     });
 
-    $('#formBecomePro').on('submit', function(e) {
-        e.preventDefault();
-
-        const btn = $('#btnConfirmBecomePro');
-        btn.data('original-text', btn.html());
-        btn.prop('disabled', true)
-           .html('<i class="spinner-border spinner-border-sm mr-1"></i> Processando...');
-
-        $.ajax({
-            url: '/become-pro',
-            type: 'POST',
-            data: $(this).serialize(),
-
-            success: function(response) {
-                if (response.success) {
-                    $('#becomeProModal').modal('hide');
-                    swal({
-                        title: "{{ __('general.congratulations') }}",
-                        text: response.message,
-                        type: "success",
-                        confirmButtonText: "{{ __('users.ok') }}"
-                    }, function() {
-                        location.reload();
-                    });
-                } else {
-                    if (response.message && response.message.toLowerCase().includes('saldo')) {
-                        $('#insufficientProWarning').removeClass('display-none');
-                    } else {
-                        $('#errorBecomePro')
-                            .removeClass('display-none')
-                            .find('span')
-                            .text(response.message);
-                    }
-                    resetProButton();
-                }
-            },
-
-            error: function(xhr) {
-                let message = xhr.responseJSON?.message || 'Ocorreu um erro ao processar.';
-                $('#errorBecomePro')
-                    .removeClass('display-none')
-                    .find('span')
-                    .text(message);
-                resetProButton();
-            }
-        });
-    });
-
     function resetButton() {
         const btn = $('#btnConfirmHighlight');
         btn.prop('disabled', false)
            .html(btn.data('original-text') || 'Destacar Agora');
-    }
-
-    function resetProButton() {
-        const btn = $('#btnConfirmBecomePro');
-        btn.prop('disabled', false)
-           .html(btn.data('original-text') || 'Confirmar');
     }
 
 });

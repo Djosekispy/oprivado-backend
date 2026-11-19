@@ -23,3 +23,10 @@ Foram ajustados estes arquivos:
   -  https://84.247.172.14:8443/
   - Username : admin
   - Passoword : @;Vicente1998
+
+ ## Limite de vídeos para contas não PRO
+
+ Configure o limite e o período de reposição com estas variáveis de ambiente:
+
+ - `POST_VIDEO_NON_PRO_LIMIT`: quantidade máxima de vídeos de publicações que uma conta não PRO pode iniciar (padrão: `10`).
+ - `POST_VIDEO_LIMIT_RESET_PERIOD`: período de reposição: `never` (padrão, limite total), `daily` ou `monthly`.

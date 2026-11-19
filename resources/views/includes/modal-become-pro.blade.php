@@ -6,13 +6,13 @@
             <div class="position-relative"
                  style="height:85px;
                         background: {{$settings->color_default}}
-                        @if($user->cover)
-                            url('{{ Helper::getFile(config('path.cover').$user->cover) }}')
+                        @if(auth()->user()->cover)
+                            url('{{ Helper::getFile(config('path.cover').auth()->user()->cover) }}')
                         @endif
                         no-repeat center center;
                         background-size:cover;">
 
-                <img src="{{ Helper::getFile(config('path.avatar').$user->avatar) }}"
+                <img src="{{ Helper::getFile(config('path.avatar').auth()->user()->avatar) }}"
                      width="70"
                      height="70"
                      class="rounded-circle border border-3 border-white shadow position-absolute"

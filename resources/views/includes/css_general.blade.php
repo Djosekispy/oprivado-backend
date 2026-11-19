@@ -1030,6 +1030,18 @@ input[type=number] {
   text-align: center;
   opacity: 0.9;
 }
+.post-video-embed-gate {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.post-video-embed-gate:focus-visible {
+  outline: 2px solid {{$settings->color_default}};
+}
 .wrapper-msg-inbox {
   overflow: auto;
   overflow-x: hidden;

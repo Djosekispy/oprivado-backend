@@ -15,7 +15,7 @@
 
 
 	@if ($media->video != '')
-	<video class="js-player w-100 @if (!request()->ajax())invisible @endif" controls @if (!$media->video_poster) @endif @if ($media->video_poster) data-poster="{{ Helper::getFile(config('path.videos').$media->video_poster) }}" @endif>
+	<video class="js-player post-video-player w-100 @if (!request()->ajax())invisible @endif" data-post-video-id="{{$media->id}}" controls @if (!$media->video_poster) @endif @if ($media->video_poster) data-poster="{{ Helper::getFile(config('path.videos').$media->video_poster) }}" @endif>
 		<source src="{{ Helper::getFile(config('path.videos').$media->video) }}" type="video/mp4" />
 	</video>
 	@endif
@@ -46,7 +46,7 @@
 
 		@if ($media->type == 'image' || $media->type == 'video')
 	
-			<a href="{{ $urlMedia }}" class="media-wrapper rounded-0 glightbox" data-gallery="gallery{{$response->id}}" style="background-image: url('{{ $videoPoster ?? $urlMedia}}?w=960&h=980')">
+			<a href="{{ $urlMedia }}" class="media-wrapper rounded-0 glightbox" @if ($media->type == 'video') data-post-video-id="{{$media->id}}" @endif data-gallery="gallery{{$response->id}}" style="background-image: url('{{ $videoPoster ?? $urlMedia}}?w=960&h=980')">
 				@if ($nth == 5 && $mediaImageVideoTotal > 5)
 		        <span class="more-media">
 					<h2>+{{ $mediaImageVideoTotal - 5 }}</h2>
