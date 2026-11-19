@@ -17,6 +17,72 @@
       padding-top: 12%;
       }
     }
+
+    .voice-message-player {
+      min-width: 0;
+    }
+
+    .voice-message-audio-container {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .voice-message-audio-container .plyr {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .voice-message-speed,
+    .voice-message-remove {
+      flex: 0 0 auto;
+      line-height: 1;
+    }
+
+    .voice-recording-indicator {
+      gap: .45rem;
+    }
+
+    .voice-recording-dot {
+      width: .55rem;
+      height: .55rem;
+      border-radius: 50%;
+      background-color: currentColor;
+      animation: voice-recording-pulse 1s ease-in-out infinite;
+    }
+
+    .voice-recording-waveform {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      height: 1.25rem;
+    }
+
+    .voice-recording-waveform span {
+      width: 2px;
+      height: 45%;
+      border-radius: 2px;
+      background-color: currentColor;
+      animation: voice-recording-wave .65s ease-in-out infinite alternate;
+    }
+
+    .voice-recording-waveform span:nth-child(3n) { height: 90%; animation-delay: -.4s; }
+    .voice-recording-waveform span:nth-child(3n + 1) { height: 65%; animation-delay: -.2s; }
+    .voice-recording-waveform span:nth-child(3n + 2) { height: 35%; animation-delay: -.55s; }
+
+    @keyframes voice-recording-pulse {
+      50% { opacity: .35; }
+    }
+
+    @keyframes voice-recording-wave {
+      to { transform: scaleY(.35); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .voice-recording-dot,
+      .voice-recording-waveform span {
+        animation: none;
+      }
+    }
   </style>
 @endsection
 
@@ -206,10 +272,15 @@
               </div>
 
               <div id="voiceMessagePreview" class="w-100 mb-2 display-none">
-                <audio id="voiceMessageAudio" class="w-100" controls></audio>
-                <button type="button" id="discardVoiceMessage" class="btn btn-link text-danger p-0 small">
-                  <i class="fa fa-times-circle"></i> Remover áudio
-                </button>
+                <div class="voice-message-player d-flex align-items-center">
+                  <div class="voice-message-audio-container">
+                    <audio id="voiceMessageAudio" class="voice-message-audio" preload="metadata"></audio>
+                  </div>
+                  <button type="button" class="btn btn-link text-muted p-0 ml-2 voice-message-speed" data-voice-speed aria-label="Velocidade de reprodução: 1x">1x</button>
+                  <button type="button" id="discardVoiceMessage" class="btn btn-link text-danger p-0 ml-2 voice-message-remove" title="Remover áudio" aria-label="Remover áudio">
+                    <i class="feather icon-x"></i>
+                  </button>
+                </div>
               </div>
               <div id="voiceMessageError" class="text-danger small mb-2 display-none" role="alert"></div>
 
@@ -224,8 +295,15 @@
                     <button type="button" id="recordVoiceMessage" class="btn btn-upload btn-tooltip e-none align-bottom @if (auth()->user()->dark_mode == 'off') text-primary @else text-white @endif rounded-pill" data-toggle="tooltip" data-placement="top" title="Gravar áudio" aria-label="Gravar áudio">
                       <i class="feather icon-mic align-bottom f-size-25"></i>
                     </button>
-                    <div id="voiceRecordingControls" class="d-inline-flex align-items-center display-none">
-                      <small class="text-muted mr-2">A gravar áudio...</small>
+                    <div id="voiceRecordingControls" class="align-items-center display-none">
+                      <div class="voice-recording-indicator text-danger d-inline-flex align-items-center">
+                        <span class="voice-recording-dot" aria-hidden="true"></span>
+                        <span id="voiceRecordingTimer">00:00</span>
+                        <span class="voice-recording-waveform" aria-hidden="true">
+                          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                        </span>
+                        <span class="sr-only" role="status" aria-live="polite">A gravar áudio</span>
+                      </div>
                       <button type="button" id="stopVoiceRecording" class="btn btn-upload e-none align-bottom @if (auth()->user()->dark_mode == 'off') text-primary @else text-white @endif rounded-pill" title="Parar gravação" aria-label="Parar gravação">
                         <i class="feather icon-square align-bottom"></i>
                       </button>
@@ -329,6 +407,7 @@
   const cancelButton = document.getElementById('cancelVoiceRecording');
   const preview = document.getElementById('voiceMessagePreview');
   const audioPreview = document.getElementById('voiceMessageAudio');
+  const recordingTimer = document.getElementById('voiceRecordingTimer');
   const discardButton = document.getElementById('discardVoiceMessage');
   const errorMessage = document.getElementById('voiceMessageError');
   const tokenInput = document.getElementById('voiceMessageToken');
@@ -341,6 +420,8 @@
   let previewUrl = null;
   let uploading = false;
   let startingRecording = false;
+  let recordingInterval = null;
+  let recordingStartedAt = null;
 
   function showError(message) {
     errorMessage.textContent = message;
@@ -377,6 +458,37 @@
     stream.getTracks().forEach(function (track) { track.stop(); });
   }
 
+  function showRecordingControls() {
+    recordingControls.classList.remove('display-none');
+    recordingControls.classList.add('d-inline-flex');
+  }
+
+  function hideRecordingControls() {
+    recordingControls.classList.add('display-none');
+    recordingControls.classList.remove('d-inline-flex');
+  }
+
+  function updateRecordingTimer() {
+    if (!recordingStartedAt) return;
+    const elapsedSeconds = Math.floor((Date.now() - recordingStartedAt) / 1000);
+    const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+    const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
+    recordingTimer.textContent = minutes + ':' + seconds;
+  }
+
+  function startRecordingFeedback() {
+    recordingStartedAt = Date.now();
+    recordingTimer.textContent = '00:00';
+    recordingInterval = window.setInterval(updateRecordingTimer, 250);
+  }
+
+  function stopRecordingFeedback() {
+    if (recordingInterval) window.clearInterval(recordingInterval);
+    recordingInterval = null;
+    recordingStartedAt = null;
+    recordingTimer.textContent = '00:00';
+  }
+
   function clearVoiceMessage() {
     if (activeRecording) {
       const recording = activeRecording;
@@ -386,15 +498,18 @@
       stopTracks(recording.stream);
     }
 
+    stopRecordingFeedback();
     voiceBlob = null;
     voiceExtension = null;
     tokenInput.value = '';
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     previewUrl = null;
     audioPreview.removeAttribute('src');
+    audioPreview.playbackRate = 1;
     audioPreview.load();
     preview.classList.add('display-none');
-    recordingControls.classList.add('display-none');
+    preview.querySelector('[data-voice-speed]').textContent = '1x';
+    hideRecordingControls();
     recordButton.classList.remove('display-none');
     clearError();
     updateSendButton();
@@ -445,8 +560,9 @@
 
       recorder.addEventListener('stop', function () {
         stopTracks(stream);
+        stopRecordingFeedback();
         if (activeRecording === recording) activeRecording = null;
-        recordingControls.classList.add('display-none');
+        hideRecordingControls();
         recordButton.classList.remove('display-none');
 
         if (recording.cancelled) return;
@@ -469,7 +585,8 @@
 
       recorder.start();
       recordButton.classList.add('display-none');
-      recordingControls.classList.remove('display-none');
+      showRecordingControls();
+      startRecordingFeedback();
       recordButton.disabled = false;
       startingRecording = false;
     } catch (error) {
@@ -489,7 +606,8 @@
       if (recording.recorder.state !== 'inactive') recording.recorder.stop();
       stopTracks(recording.stream);
     }
-    recordingControls.classList.add('display-none');
+    stopRecordingFeedback();
+    hideRecordingControls();
     recordButton.classList.remove('display-none');
     clearError();
     updateSendButton();
@@ -560,6 +678,7 @@
   form.addEventListener('reset', clearVoiceMessage);
   window.addEventListener('pagehide', function () {
     if (activeRecording) stopTracks(activeRecording.stream);
+    stopRecordingFeedback();
     if (previewUrl) URL.revokeObjectURL(previewUrl);
   });
 
@@ -577,6 +696,57 @@
   }
 
   updateSendButton();
+})();
+</script>
+<script>
+(function () {
+  function initializeVoicePlayers(root) {
+    const audioElements = [];
+    if (root.matches && root.matches('.voice-message-audio')) audioElements.push(root);
+    if (root.querySelectorAll) {
+      audioElements.push.apply(audioElements, root.querySelectorAll('.voice-message-audio'));
+    }
+
+    audioElements.forEach(function (audio) {
+      if (audio.dataset.voicePlayerInitialized) return;
+      if (typeof window.Plyr !== 'function') {
+        console.error('Não foi possível inicializar o reprodutor de áudio das mensagens.');
+        return;
+      }
+
+      new window.Plyr(audio, {
+        controls: ['play', 'progress', 'current-time', 'duration']
+      });
+
+      const wrapper = audio.closest('.voice-message-player');
+      const speedButton = wrapper.querySelector('[data-voice-speed]');
+      function updateSpeedButton() {
+        const speed = audio.playbackRate >= 1.5 ? 2 : 1;
+        speedButton.textContent = speed + 'x';
+        speedButton.setAttribute('aria-label', 'Velocidade de reprodução: ' + speed + 'x');
+      }
+
+      audio.playbackRate = 1;
+      speedButton.addEventListener('click', function () {
+        audio.playbackRate = audio.playbackRate >= 1.5 ? 1 : 2;
+        updateSpeedButton();
+      });
+      audio.addEventListener('ratechange', updateSpeedButton);
+      audio.dataset.voicePlayerInitialized = 'true';
+      wrapper.classList.remove('invisible');
+    });
+  }
+
+  initializeVoicePlayers(document);
+
+  const messageObserver = new MutationObserver(function (mutations) {
+    mutations.forEach(function (mutation) {
+      mutation.addedNodes.forEach(function (node) {
+        if (node.nodeType === Node.ELEMENT_NODE) initializeVoicePlayers(node);
+      });
+    });
+  });
+  messageObserver.observe(document.body, { childList: true, subtree: true });
 })();
 </script>
 

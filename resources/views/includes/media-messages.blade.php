@@ -87,7 +87,7 @@
 @foreach ($msg->media as $media)
 
 	@if ($media->type == 'music')
-	<div class="wrapper-media-music @if ($mediaCount >= 2) mt-2 @endif">
+	<div class="wrapper-media-music voice-message-player d-flex align-items-center {{$classInvisible}} @if ($mediaCount >= 2) mt-2 @endif">
 		@php
 			$audioExtension = strtolower(pathinfo($media->file, PATHINFO_EXTENSION));
 			$audioMimeTypes = [
@@ -98,10 +98,13 @@
 				'mka' => 'audio/x-matroska',
 			];
 		@endphp
-		<audio class="js-player {{$classInvisible}}" preload="metadata" controls>
-		<source src="{{Helper::getFile(config('path.messages').$media->file)}}" type="{{$audioMimeTypes[$audioExtension] ?? 'audio/mpeg'}}">
-		Your browser does not support the audio tag.
-	</audio>
+	<div class="voice-message-audio-container">
+		<audio class="voice-message-audio" preload="metadata">
+			<source src="{{Helper::getFile(config('path.messages').$media->file)}}" type="{{$audioMimeTypes[$audioExtension] ?? 'audio/mpeg'}}">
+			Your browser does not support the audio tag.
+		</audio>
+	</div>
+	<button type="button" class="btn btn-link text-muted p-0 ml-2 voice-message-speed" data-voice-speed aria-label="Velocidade de reprodução: 1x">1x</button>
 </div>
 	@endif
 
