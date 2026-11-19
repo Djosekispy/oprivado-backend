@@ -298,6 +298,7 @@ class MessagesController extends Controller
     $rules = [
       'message' => 'nullable|string|min:1|max:' . config('settings.comment_length'),
       'voice_token' => 'nullable|string|max:255',
+      'voice_only' => 'nullable|boolean',
       'zip'    => 'mimes:zip|max:' . config('settings.file_size_allowed') . '',
       'epub'    => 'mimes:epub,zip|max:' . config('settings.file_size_allowed') . '',
       'price'  => 'numeric|min:' . config('settings.min_ppv_amount') . '|max:' . config('settings.max_ppv_amount'),
@@ -330,7 +331,8 @@ class MessagesController extends Controller
       }
     }
 
-    $messageText = trim((string) $request->input('message', ''));
+    $voiceOnly = $voiceMedia && (string) $request->input('voice_only') === '1';
+    $messageText = $voiceOnly ? '' : trim((string) $request->input('message', ''));
     if ($messageText === '' && !$voiceMedia) {
       return response()->json([
         'success' => false,

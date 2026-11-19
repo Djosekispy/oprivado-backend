@@ -239,6 +239,7 @@
             <form action="{{url('message/send')}}" method="post" accept-charset="UTF-8" id="formSendMsg" data-voice-upload-url="{{route('upload.message.voice')}}" enctype="multipart/form-data">
               <input type="hidden" name="id_user" id="id_user" value="{{$user->id}}">
               <input type="hidden" name="voice_token" id="voiceMessageToken" value="">
+              <input type="hidden" name="voice_only" id="voiceOnlyMessage" value="">
               <input type="hidden" name="_token" value="{{ csrf_token() }}">
               <input type="file" name="zip" id="zipFile" accept="application/x-zip-compressed" class="visibility-hidden">
 
@@ -411,6 +412,7 @@
   const discardButton = document.getElementById('discardVoiceMessage');
   const errorMessage = document.getElementById('voiceMessageError');
   const tokenInput = document.getElementById('voiceMessageToken');
+  const voiceOnlyInput = document.getElementById('voiceOnlyMessage');
   const messageInput = document.getElementById('message');
   const sendButton = document.getElementById('button-reply-msg');
 
@@ -623,6 +625,18 @@
   discardButton.addEventListener('click', clearVoiceMessage);
   messageInput.addEventListener('input', updateSendButton);
 
+  function prepareVoiceOnlySubmission() {
+    if (!voiceBlob || !tokenInput.value || messageInput.value.trim()) return;
+
+    const originalMessage = messageInput.value;
+    voiceOnlyInput.value = '1';
+    messageInput.value = 'x';
+    window.setTimeout(function () {
+      messageInput.value = originalMessage;
+      voiceOnlyInput.value = '';
+    }, 0);
+  }
+
   function uploadVoiceAndSubmit() {
     if (uploading) return;
     uploading = true;
@@ -662,17 +676,25 @@
   }
 
   sendButton.addEventListener('click', function (event) {
-    if (!voiceBlob || tokenInput.value) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    uploadVoiceAndSubmit();
+    if (!voiceBlob) return;
+    if (!tokenInput.value) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      uploadVoiceAndSubmit();
+      return;
+    }
+    prepareVoiceOnlySubmission();
   }, true);
 
   form.addEventListener('submit', function (event) {
-    if (!voiceBlob || tokenInput.value) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    uploadVoiceAndSubmit();
+    if (!voiceBlob) return;
+    if (!tokenInput.value) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      uploadVoiceAndSubmit();
+      return;
+    }
+    prepareVoiceOnlySubmission();
   }, true);
 
   form.addEventListener('reset', clearVoiceMessage);
