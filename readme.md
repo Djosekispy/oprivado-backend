@@ -28,5 +28,6 @@ Foram ajustados estes arquivos:
 
  Configure o limite e o período de reposição com estas variáveis de ambiente:
 
+ - `ENABLE_POST_VIDEO_NON_PRO_LIMIT`: habilita (`true`) ou desabilita (`false`, padrão) a aplicação do limite a contas não PRO.
  - `POST_VIDEO_NON_PRO_LIMIT`: quantidade máxima de vídeos de publicações que uma conta não PRO pode iniciar (padrão: `10`).
  - `POST_VIDEO_LIMIT_RESET_PERIOD`: período de reposição: `never` (padrão, limite total), `daily` ou `monthly`.

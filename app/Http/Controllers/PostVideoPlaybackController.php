@@ -52,6 +52,15 @@ class PostVideoPlaybackController extends Controller
             throw new UnexpectedValueException('POST_VIDEO_NON_PRO_LIMIT must be a non-negative integer.');
         }
 
+        if (!config('video_limits.non_pro_limit_enabled')) {
+            return response()->json([
+                'allowed' => true,
+                'consumed' => null,
+                'limit' => $limit,
+                'reset_period' => config('video_limits.reset_period'),
+            ]);
+        }
+
         $resetPeriod = config('video_limits.reset_period');
         $periodKey = $this->periodKey($resetPeriod);
 
