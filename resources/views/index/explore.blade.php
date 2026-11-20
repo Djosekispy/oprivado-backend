@@ -9,6 +9,14 @@
     <div class="container container-lg-3 pt-lg-5 pt-3">
       <div class="row">
 
+        @if (session('explore_success'))
+          <div class="col-12">
+            <div class="alert alert-success" role="status">
+              {{ session('explore_success') }}
+            </div>
+          </div>
+        @endif
+
         <div class="col-md-2">
           @include('includes.menu-sidebar-home')
         </div>

@@ -165,6 +165,12 @@ class UserController extends Controller
 
   public function profile($slug, $media = null)
   {
+    if (session()->pull('redirect_after_restriction')) {
+      $message = session()->pull('explore_success');
+
+      return redirect('explore')->with('explore_success', $message);
+    }
+
     $user = User::visibleToViewer(auth()->id())
       ->where('username', $slug)
       ->whereIn('status', ['active', 'disabled'])
@@ -2206,12 +2212,19 @@ public function reportCreator(Request $request)
       ]);
     }
 
+    $message = $isRestricted
+      ? __('general.user_blocked_success')
+      : __('general.user_unblocked_success');
+
+    if ($isRestricted) {
+      session()->flash('redirect_after_restriction', true);
+      session()->flash('explore_success', $message);
+    }
+
     return response()->json([
       'success' => true,
       'is_restricted' => $isRestricted,
-      'message' => $isRestricted
-        ? __('general.user_blocked_success')
-        : __('general.user_unblocked_success')
+      'message' => $message
     ]);
   } // End method restrictUser
 

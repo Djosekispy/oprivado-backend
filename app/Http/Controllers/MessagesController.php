@@ -106,6 +106,12 @@ class MessagesController extends Controller
    */
   public function messages($id)
   {
+    if (session()->pull('redirect_after_restriction')) {
+      $message = session()->pull('explore_success');
+
+      return redirect('explore')->with('explore_success', $message);
+    }
+
     $user = User::whereId($id)
       ->where('id', '<>', auth()->id())
       ->whereStatus('active')
