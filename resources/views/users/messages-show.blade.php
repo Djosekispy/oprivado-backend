@@ -172,7 +172,8 @@
             </button>
 
           @else
-            <button type="button" class="dropdown-item" data-user="{{$user->id}}" id="restrictUser">
+            <button type="button" class="dropdown-item" data-user="{{$user->id}}" id="restrictUser"
+              @if ($user->isSuperAdmin()) disabled aria-disabled="true" title="{{ __('general.cannot_block_admin') }}" @endif>
               <i class="fas fa-ban mr-2"></i> {{__('general.restrict')}}
             </button>
           @endif
