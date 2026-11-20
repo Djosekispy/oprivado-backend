@@ -456,7 +456,7 @@ Route::get('verify/account/{confirmation_code}', [HomeController::class, 'getVer
 	Route::get('explore',[UpdatesController::class, 'explore']);
 
 	// Add/Remove Restrict User
-	Route::post('restrict/user/{id}', [UserController::class, 'restrictUser']);
+	Route::post('restrict/user/{id}', [UserController::class, 'restrictUser'])->middleware('auth');
 
 	// Restrict User
  	Route::get('settings/restrictions',[UserController::class, 'restrictions']);

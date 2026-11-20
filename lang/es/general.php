@@ -1006,6 +1006,11 @@ return array(
 	'confirm_restrict' => 'Bloquear a este usuario impedirá que ambos vean los perfiles y publicaciones del otro, además de impedir mensajes privados y comentarios.',
 	'remove_restriction' => 'Quitar restricción',
 	'info_restricted_users' => 'Usuarios que ha restringido',
+	'user_blocked_success' => 'Usuario bloqueado correctamente.',
+	'user_unblocked_success' => 'Bloqueo eliminado correctamente.',
+	'cannot_block_self' => 'No puedes bloquear tu propia cuenta.',
+	'cannot_block_admin' => 'No se puede bloquear a un administrador.',
+	'block_user_failed' => 'No se pudo actualizar el bloqueo. Inténtalo de nuevo.',
 
 	// Version 4.0
 	'physical_products' => 'Productos físicos',

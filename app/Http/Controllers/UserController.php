@@ -2166,28 +2166,52 @@ public function reportCreator(Request $request)
   {
     $verifyUser = User::findOrFail($id);
 
-    // Avoid self restricting
     if ($verifyUser->id == auth()->id()) {
-      abort(500);
+      $message = __('general.cannot_block_self');
+
+      return response()->json([
+        'success' => false,
+        'message' => $message,
+        'errors' => ['error' => $message]
+      ]);
     }
 
-    // Avoid Admin Restriction
     if ($verifyUser->isSuperAdmin()) {
+      $message = __('general.cannot_block_admin');
+
       return response()->json([
-        'success' => true
+        'success' => false,
+        'message' => $message,
+        'errors' => ['error' => $message]
       ]);
     }
 
     $restrict = Restrictions::firstOrNew(['user_id' => auth()->id(), 'user_restricted' => $id]);
 
     if ($restrict->exists) {
-      $restrict->delete();
+      $updated = $restrict->delete();
+      $isRestricted = false;
     } else {
-      $restrict->save();
+      $updated = $restrict->save();
+      $isRestricted = true;
+    }
+
+    if (!$updated) {
+      $message = __('general.block_user_failed');
+
+      return response()->json([
+        'success' => false,
+        'message' => $message,
+        'errors' => ['error' => $message]
+      ]);
     }
 
     return response()->json([
-      'success' => true
+      'success' => true,
+      'is_restricted' => $isRestricted,
+      'message' => $isRestricted
+        ? __('general.user_blocked_success')
+        : __('general.user_unblocked_success')
     ]);
   } // End method restrictUser
 
