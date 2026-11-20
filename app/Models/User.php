@@ -187,6 +187,26 @@ class User extends Authenticatable implements HasLocalePreference
     return $this->hasMany(Updates::class)->where('status', 'active');
   }
 
+  public function scopeVisibleToViewer($query, $viewerId = null)
+  {
+    if (!$viewerId) {
+      return $query;
+    }
+
+    return $query->joinSub(
+      DB::table('users as visible_user_candidates')
+        ->select('visible_user_candidates.id as visible_user_id')
+        ->whereNotIn(
+          'visible_user_candidates.id',
+          Restrictions::blockedUserIdsFor($viewerId)
+        ),
+      'visible_users',
+      function ($join) {
+        $join->on('visible_users.visible_user_id', '=', 'users.id');
+      }
+    );
+  }
+
   public function promotedPosts()
   {
     return $this->hasMany(PromotedPost::class)->orderByDesc('created_at');
@@ -268,6 +288,7 @@ public function feed(?int $skip = null)
     }
 
     $query = Updates::getSelectRelations()
+        ->visibleToViewer($this->id)
         ->whereIn('user_id', $followedIds)
         ->where('status', 'active')
         ->orderBy('id', 'desc')
@@ -292,6 +313,7 @@ public function feed(?int $skip = null)
       'status',
       'created_at'
     ])->whereIntegerInRaw('user_id', $fetchSubscriptions)
+      ->whereNotIn('user_id', Restrictions::blockedUserIdsFor($this->id))
       ->where('created_at', '>', date('Y-m-d H:i:s', strtotime('- 1 day')))
       ->whereStatus('active')
       ->with(['user:id,name,username,avatar,hide_name', 'media'])
@@ -709,6 +731,11 @@ public function feed(?int $skip = null)
     return Restrictions::whereUserId($this->id)
       ->whereUserRestricted($user)
       ->first();
+  }
+
+  public function isBlockedWith($user)
+  {
+    return Restrictions::existsBetween($this->id, $user);
   }
 
   public function checkRestriction($user)

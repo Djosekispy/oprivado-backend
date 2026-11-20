@@ -165,7 +165,8 @@ class UserController extends Controller
 
   public function profile($slug, $media = null)
   {
-    $user = User::whereUsername($slug)
+    $user = User::visibleToViewer(auth()->id())
+      ->whereUsername($slug)
       ->whereStatus('active')
       ->orWhere('status', 'disabled')
       ->whereUsername($slug)
@@ -173,6 +174,10 @@ class UserController extends Controller
 
     if ($user->status == 'disabled') {
       return view('errors.profile-disabled');
+    }
+
+    if (auth()->check() && auth()->user()->isBlockedWith($user->id)) {
+      abort(404);
     }
 
     if ($media && $user->verified_id != 'yes') {
@@ -406,7 +411,8 @@ class UserController extends Controller
 
   public function postDetail($slug, $id)
   {
-    $user = User::where('username', '=', $slug)
+    $user = User::visibleToViewer(auth()->id())
+      ->where('username', '=', $slug)
       ->where('status', 'active')
       ->with([
         'updatesPostDetail' => fn ($query) =>
@@ -417,6 +423,10 @@ class UserController extends Controller
       ])->firstOrFail();
 
     $updatesCount = $user->updatesPostDetail->count();
+
+    if (auth()->check() && auth()->user()->isBlockedWith($user->id)) {
+      abort(404);
+    }
 
     // Check the status of the post
     if (
@@ -1816,6 +1826,7 @@ public function reportCreator(Request $request)
   public function myBookmarks()
   {
     $bookmarks = auth()->user()->bookmarks()
+      ->visibleToViewer(auth()->id())
       ->orderBy('bookmarks.id', 'desc')
       ->getSelectRelations()
       ->simplePaginate(config('settings.number_posts_show'));
@@ -1836,7 +1847,7 @@ public function reportCreator(Request $request)
   // Download File
   public function downloadFile($id)
   {
-    $post = Updates::findOrFail($id);
+    $post = Updates::visibleToViewer(auth()->id())->findOrFail($id);
     $checkUserSubscription = auth()->user()->checkSubscription($post->user());
 
     if ($post->locked == 'yes') {
@@ -1993,7 +2004,10 @@ public function reportCreator(Request $request)
   // My Purchases
   public function myPurchases()
   {
-    $purchases = auth()->user()->payPerView()->orderBy('pay_per_views.id', 'desc')->paginate($this->settings->number_posts_show);
+    $purchases = auth()->user()->payPerView()
+      ->visibleToViewer(auth()->id())
+      ->orderBy('pay_per_views.id', 'desc')
+      ->paginate($this->settings->number_posts_show);
 
     $users = $this->userExplore();
 
@@ -2009,7 +2023,12 @@ public function reportCreator(Request $request)
     $skip = $this->request->input('skip');
     $total = $this->request->input('total');
 
-    $data = auth()->user()->payPerView()->orderBy('pay_per_views.id', 'desc')->skip($skip)->take($this->settings->number_posts_show)->get();
+    $data = auth()->user()->payPerView()
+      ->visibleToViewer(auth()->id())
+      ->orderBy('pay_per_views.id', 'desc')
+      ->skip($skip)
+      ->take($this->settings->number_posts_show)
+      ->get();
     $counterPosts = ($total - $this->settings->number_posts_show - $skip);
 
     return view(
@@ -2131,7 +2150,7 @@ public function reportCreator(Request $request)
 
   public function mentions()
   {
-    $users = User::whereStatus('active')
+    $users = User::visibleToViewer(auth()->id())->whereStatus('active')
       ->where('username', 'LIKE', '%' . $this->request->filter . '%')
       ->orderBy('verified_id', 'asc')
       ->take(5)
@@ -2193,6 +2212,7 @@ public function reportCreator(Request $request)
   public function myLikes()
   {
     $likes = auth()->user()->myLikes()
+      ->visibleToViewer(auth()->id())
       ->orderBy('likes.id', 'desc')
       ->getSelectRelations()
       ->simplePaginate(config('settings.number_posts_show'));
@@ -2216,6 +2236,7 @@ public function reportCreator(Request $request)
     $skip = $this->request->input('skip');
 
     $data = auth()->user()->myLikes()
+      ->visibleToViewer(auth()->id())
       ->getSelectRelations()
       ->orderBy('likes.id', 'desc')
       ->skip($skip)

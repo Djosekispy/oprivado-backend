@@ -110,6 +110,7 @@ class MessagesController extends Controller
       ->where('id', '<>', auth()->id())
       ->whereStatus('active')
       ->firstOrFail();
+    $this->ensureNoBlockedConversation($user);
 
     $messages = Messages::where('to_user_id', auth()->id())
       ->where('from_user_id', $id)
@@ -153,6 +154,7 @@ class MessagesController extends Controller
     }
 
     $user = User::whereId($id)->where('id', '<>', auth()->id())->firstOrFail();
+    $this->ensureNoBlockedConversation($user);
 
     $messages = Messages::getMessageChat($id);
 
@@ -179,6 +181,9 @@ class MessagesController extends Controller
     if (!auth()->check()) {
       return response()->json(['session_null' => true]);
     }
+
+    $user = User::findOrFail($request->get('user_id'));
+    $this->ensureNoBlockedConversation($user);
 
     $_sql = $request->get('first_msg') == 'true' ? '=' : '>';
 
@@ -216,8 +221,6 @@ class MessagesController extends Controller
       } //<--- foreach
     } //<--- IF != 0
 
-    $user = User::findOrFail($request->get('user_id'));
-
     if ($user->active_status_online == 'yes') {
       // Check User Online
       if (Cache::has('is-online-' . $request->get('user_id'))) {
@@ -250,6 +253,7 @@ class MessagesController extends Controller
     $id   = $request->input('id');
     $skip = $request->input('skip');
     $user = User::whereId($id)->where('id', '<>', auth()->id())->firstOrFail();
+    $this->ensureNoBlockedConversation($user);
 
     $messages = Messages::getMessageChat($id, $skip);
 
@@ -278,6 +282,7 @@ class MessagesController extends Controller
 
     // Find user in Database
     $user = User::findOrFail($request->get('id_user'));
+    $this->ensureNoBlockedConversation($user);
 
     // Currency Position
     if (config('settings.currency_position') == 'right') {
@@ -503,7 +508,7 @@ class MessagesController extends Controller
     $data = "";
 
     if ($query != '' && strlen($query) >= 2) {
-      $sql = User::where('status', 'active')
+      $sql = User::visibleToViewer(auth()->id())->where('status', 'active')
         ->where('username', 'LIKE', '%' . $query . '%')
         ->where('id', '<>', auth()->id())
         ->where('id', '<>', config('settings.hide_admin_profile') == 'on' ? 1 : 0)
@@ -615,6 +620,10 @@ class MessagesController extends Controller
     if ($msg->to_user_id != auth()->id() && $msg->from_user_id != auth()->id()) {
       abort(404);
     }
+    $otherUserId = $msg->from_user_id == auth()->id()
+      ? $msg->to_user_id
+      : $msg->from_user_id;
+    $this->ensureNoBlockedConversation(User::findOrFail($otherUserId));
 
     $media = MediaMessages::whereMessagesId($msg->id)->whereType('zip')->firstOrFail();
 
@@ -724,6 +733,10 @@ class MessagesController extends Controller
   public function viewEpub($id)
   {
     $epub = MediaMessages::with(['messages'])->whereId($id)->firstOrfail();
+    $otherUserId = $epub->messages->from_user_id == auth()->id()
+      ? $epub->messages->to_user_id
+      : $epub->messages->from_user_id;
+    $this->ensureNoBlockedConversation(User::findOrFail($otherUserId));
 
     $checkUserSubscription = auth()->user()->checkSubscription($epub->messages->user());
 
@@ -742,5 +755,10 @@ class MessagesController extends Controller
     return view('users.epub-viewer', [
       'urlFile' => Helper::getFile(config('path.messages') . $epub->file)
     ]);
+  }
+
+  protected function ensureNoBlockedConversation(User $user)
+  {
+    abort_if(auth()->user()->isBlockedWith($user->id), 404);
   }
 }

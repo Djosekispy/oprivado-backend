@@ -37,6 +37,10 @@ class RepliesController extends Controller
 				'likes',
 			],
 		])->findOrFail($id);
+		abort_unless(
+			Updates::visibleToViewer(auth()->id())->whereKey($comment->updates_id)->exists(),
+			404
+		);
 
 		$page     = $this->request->input('page');
 		$replies  = $comment->replies()->skip($skip)->take(config('settings.number_comments_show'))->orderBy('id', 'DESC')->get();

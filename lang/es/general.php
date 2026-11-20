@@ -1003,7 +1003,7 @@ return array(
 	'results' => 'Resultados:',
 	'restrict' => 'Restringir',
 	'restricted_users' => 'Usuarios restringidos',
-	'confirm_restrict' => 'Restringir a este usuario evitará que te envíe mensajes privados o comente tus publicaciones, pero aún podrá ver tu perfil.',
+	'confirm_restrict' => 'Bloquear a este usuario impedirá que ambos vean los perfiles y publicaciones del otro, además de impedir mensajes privados y comentarios.',
 	'remove_restriction' => 'Quitar restricción',
 	'info_restricted_users' => 'Usuarios que ha restringido',
 

@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Helper;
 use App\Models\Messages;
+use App\Models\Restrictions;
 use Illuminate\Support\Str;
 use App\Models\MediaMessages;
 use App\Events\MassMessagesEvent;
@@ -57,13 +58,21 @@ class MassMessagesListener implements ShouldQueue
       ->whereIn('stripe_price', $user->plans()->pluck('name'))
       ->where('free', '=', 'yes')
       ->get();
+    $blockedUserIds = Restrictions::blockedUserIdsFor($user->id)
+      ->pluck('user_restricted')
+      ->all();
 
     // Send an email notification to all subscribers when there is a new post
     foreach ($subscriptionsActive as $subscriber) {
+      $subscriberId = $subscriber->user()->id;
+      if (in_array($subscriberId, $blockedUserIds)) {
+        continue;
+      }
+
       $message = new Messages();
       $message->conversations_id = 0;
       $message->from_user_id    = $user->id;
-      $message->to_user_id      = $subscriber->user()->id;
+      $message->to_user_id      = $subscriberId;
       $message->message         = trim(Helper::checkTextDb($messageData));
       $message->updated_at      = now();
       $message->price           = $price;

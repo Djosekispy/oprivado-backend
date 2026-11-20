@@ -48,7 +48,9 @@ class CommentsController extends Controller
 		$input = $request->all();
 		$validator = $this->validator($input);
 
-	    $update = Updates::where('id', $request->update_id)->first();
+	    $update = Updates::visibleToViewer(auth()->id())
+			->where('id', $request->update_id)
+			->first();
 
 	   if (! isset($update)) {
 	   		return response()->json([
@@ -282,7 +284,7 @@ if (Helper::containsBlockedWordsComment($request->comment)) {
 		$id       = $request->input('id');
 		$postId   = $request->input('post');
 		$skip     = $request->input('skip');
-		$response = Updates::findOrFail($postId);
+		$response = Updates::visibleToViewer(auth()->id())->findOrFail($postId);
 
 		$page     = $request->input('page');
 		$comments = $response->comments()->skip($skip)->take(config('settings.number_comments_show'))->orderBy('id', 'DESC')->get();

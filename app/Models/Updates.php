@@ -142,4 +142,24 @@ class Updates extends Model
 			$sql->where('blocked_countries', 'NOT LIKE', '%'.Helper::userCountry().'%')
 		]);
 	}
+
+	public function scopeVisibleToViewer($query, $viewerId = null)
+	{
+		if (!$viewerId) {
+			return $query;
+		}
+
+		return $query->joinSub(
+			\DB::table('updates as visible_update_candidates')
+				->select('visible_update_candidates.id as visible_update_id')
+				->whereNotIn(
+					'visible_update_candidates.user_id',
+					Restrictions::blockedUserIdsFor($viewerId)
+				),
+			'visible_updates',
+			function ($join) {
+				$join->on('visible_updates.visible_update_id', '=', 'updates.id');
+			}
+		);
+	}
 }

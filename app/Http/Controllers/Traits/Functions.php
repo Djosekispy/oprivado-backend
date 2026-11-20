@@ -42,7 +42,7 @@ trait Functions
 	public function userExplore($type = false)
 	{
 		if ($type) {
-			return User::selectFieldsUserExplorer()->where('status', 'active')
+			return User::visibleToViewer(auth()->id())->selectFieldsUserExplorer()->where('status', 'active')
 				->where('id', '<>', auth()->id() ?? 0)
 				->whereVerifiedId('yes')
 				->where('id', '<>', config('settings.hide_admin_profile') == 'on' ? 1 : 0)
@@ -54,7 +54,7 @@ trait Functions
 				->get();
 		}
 
-		return User::selectFieldsUserExplorer()->where('status', 'active')
+		return User::visibleToViewer(auth()->id())->selectFieldsUserExplorer()->where('status', 'active')
 			->where('id', '<>', auth()->id() ?? 0)
 			->whereVerifiedId('yes')
 			->where('id', '<>', config('settings.hide_admin_profile') == 'on' ? 1 : 0)

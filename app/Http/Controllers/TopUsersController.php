@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Restrictions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
@@ -29,7 +30,7 @@ class TopUsersController extends Controller
             $period = 'all_time';
         }
 
-        $query = User::query()
+        $query = User::visibleToViewer(auth()->id())
             ->where('status', 'active')
             ->where('role', '!=', 'admin')
             ->where('verified_id', 'yes')
@@ -150,7 +151,7 @@ class TopUsersController extends Controller
 
             $title = $titleMap[$period] ?? 'Top 10 (Elite)';
 
-            $query = User::query()
+            $query = User::visibleToViewer(auth()->id())
                 ->where('status', 'active')
                 ->where('role', '!=', 'admin')
                 ->where('verified_id', 'yes')
@@ -317,8 +318,15 @@ class TopUsersController extends Controller
 
         $title = 'Top 10 Criadores em Live';
 
-        $topUsers = Cache::remember("top_live_{$period}", 60, function () use ($period) {
-            $query = User::query()
+        $viewerId = auth()->id();
+        $restrictionIds = auth()->check()
+            ? Restrictions::where(function ($query) use ($viewerId) {
+                $query->where('user_id', $viewerId)
+                    ->orWhere('user_restricted', $viewerId);
+            })->orderBy('id')->pluck('id')->implode('_')
+            : '';
+        $topUsers = Cache::remember("top_live_{$period}_{$viewerId}_{$restrictionIds}", 60, function () use ($period, $viewerId) {
+            $query = User::visibleToViewer($viewerId)
                 ->where('users.status', 'active')
                 ->where('users.role', '!=', 'admin')
                 ->where('users.verified_id', 'yes')
@@ -396,7 +404,7 @@ class TopUsersController extends Controller
     try {
         $title = 'Em Destaque';
 
-        $topUsers = User::query()
+        $topUsers = User::visibleToViewer(auth()->id())
             ->where('users.status', 'active')
             ->where('users.featured', 'yes')
 			 ->where('users.role','!=', 'admin')

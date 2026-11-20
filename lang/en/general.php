@@ -1028,7 +1028,7 @@ return array(
 'results' => 'Resultados:',
 'restrict' => 'Bloquear',
 'restricted_users' => 'Bloqueados',
-'confirm_restrict' => 'Bloquear este utilizador impedirá que ele envie mensagens privadas ou comente nos seus posts, mas ainda poderá visualizar o seu perfil.',
+'confirm_restrict' => 'Bloquear este utilizador impedirá que ambos visualizem os perfis e publicações um do outro, além de impedir mensagens privadas e comentários.',
 'remove_restriction' => 'Desbloquear',
 'info_restricted_users' => 'Utilizadores que você bloqueoou',
 

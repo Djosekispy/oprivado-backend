@@ -30,8 +30,12 @@ class Messages extends Model
         ->on(DB::raw('LEAST(m1.from_user_id, m1.to_user_id)'), '=', 'm2.from_user_id')
         ->on(DB::raw('GREATEST(m1.from_user_id, m1.to_user_id)'), '=', 'm2.to_user_id')
         ->on('m1.id', '=', 'm2.max_id'))
-      ->where('m1.from_user_id', auth()->id())
-      ->orWhere('m1.to_user_id', auth()->id())
+      ->where(function ($query) {
+        $query->where('m1.from_user_id', auth()->id())
+          ->orWhere('m1.to_user_id', auth()->id());
+      })
+      ->whereNotIn('m1.from_user_id', Restrictions::blockedUserIdsFor(auth()->id()))
+      ->whereNotIn('m1.to_user_id', Restrictions::blockedUserIdsFor(auth()->id()))
       ->orderByDesc('m1.created_at')
       ->orderByDesc('m1.id')
       ->with(['sender:' . $fields, 'receiver:' . $fields, 'media'])

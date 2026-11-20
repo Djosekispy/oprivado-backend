@@ -24,12 +24,12 @@ class SearchSuggestionController extends Controller
         }
 
        
-        $updatesQuery = Updates::query()
+        $updatesQuery = Updates::visibleToViewer(auth()->id())
             ->where('description', 'LIKE', "%{$term}%")
             ->select('description')
             ->limit(8);
 
-        $usersQuery = User::query()
+        $usersQuery = User::visibleToViewer(auth()->id())
             ->where('name', 'LIKE', "%{$term}%")
             ->select('name')
             ->limit(8);

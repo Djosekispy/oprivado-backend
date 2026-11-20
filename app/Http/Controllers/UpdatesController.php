@@ -566,7 +566,7 @@ if (
     $media = $this->request->input('media');
     $mediaArray = ['photos', 'videos', 'audio', 'files', 'epub'];
 
-    $user = User::findOrFail($id);
+    $user = User::visibleToViewer(auth()->id())->findOrFail($id);
 
     if (isset($media) && !in_array($media, $mediaArray)) {
       abort(500);
@@ -690,6 +690,11 @@ if (
 
   public function image($id, $path)
   {
+    if (auth()->check()) {
+      $post = Updates::findOrFail($id);
+      abort_if(auth()->user()->isBlockedWith($post->user_id), 404);
+    }
+
     try {
       $server = ServerFactory::create([
         'response' => new LaravelResponseFactory(app('request')),
@@ -729,6 +734,10 @@ if (
         ->whereFromUserId(auth()->id())
         ->orWhere('id', '=', $id)->where('to_user_id', '=', auth()->id())
         ->firstOrFail();
+      $otherUserId = $response->from_user_id == auth()->id()
+        ? $response->to_user_id
+        : $response->from_user_id;
+      abort_if(auth()->user()->isBlockedWith($otherUserId), 404);
 
       $server->outputImage($path, $this->request->all());
     } catch (\Exception $e) {
@@ -771,6 +780,7 @@ if (
     $skip = $this->request->input('skip');
 
     $data = auth()->user()->bookmarks()
+      ->visibleToViewer(auth()->id())
       ->getSelectRelations()
       ->orderBy('bookmarks.id', 'desc')
       ->skip($skip)
@@ -783,6 +793,10 @@ if (
   public function getFileMedia($typeMedia, $fileId)
   {
     $response = Media::findOrFail($fileId);
+    if (auth()->check()) {
+      abort_if(auth()->user()->isBlockedWith($response->updates->user_id), 404);
+    }
+
     $checkUserSubscription = auth()->check() ? auth()->user()->checkSubscription($response->updates->user()) : null;
 
     switch ($typeMedia) {
@@ -839,7 +853,7 @@ if (
       return redirect('/');
     }
 
-    $updates = Updates::verifyCountryBlocking();
+    $updates = Updates::visibleToViewer(auth()->id())->verifyCountryBlocking();
 
     // Filter by hashtag
     $updates->when(strlen(request('q')) > 2, function ($q) {
@@ -883,7 +897,7 @@ if (
   public function ajaxExplore()
   {
     $skip = $this->request->input('skip');
-    $updates = Updates::verifyCountryBlocking();
+    $updates = Updates::visibleToViewer(auth()->id())->verifyCountryBlocking();
 
     // Filter by hashtag
     $updates->when(strlen(request('q')) > 2, function ($q) {
@@ -924,6 +938,9 @@ if (
           $urlStorage = '/uploads/updates/images/';
 
           $realPath = Media::findOrFail($path);
+          if (auth()->check()) {
+            abort_if(auth()->user()->isBlockedWith($realPath->user_id), 404);
+          }
           $path = $realPath->image;
 
           break;
@@ -976,7 +993,9 @@ if (
    */
   public function videoViews($id): void
   {
-    $post = Updates::with(['videoViews'])->findOrFail($id);
+    $post = Updates::visibleToViewer(auth()->id())
+      ->with(['videoViews'])
+      ->findOrFail($id);
     $userIP = request()->ip();
 
     if (auth()->check()) {
@@ -1014,7 +1033,12 @@ if (
 
   public function viewEpub($id)
   {
-    $epub = Media::with(['updates'])->whereId($id)->firstOrfail();
+    $epub = Media::with(['updates'])
+      ->whereHas('updates', function ($query) {
+        $query->visibleToViewer(auth()->id());
+      })
+      ->whereId($id)
+      ->firstOrfail();
 
     $checkUserSubscription = auth()->user()->checkSubscription($epub->user());
 

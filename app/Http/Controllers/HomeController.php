@@ -9,6 +9,7 @@ use App\Models\Updates;
 use App\Models\Bookmarks;
 use App\Models\Categories;
 use App\Models\StoryFonts;
+use App\Models\Restrictions;
 use Illuminate\Http\Request;
 use App\Models\AdminSettings;
 use App\Models\LiveStreamings;
@@ -130,7 +131,8 @@ class HomeController extends Controller
 
   public function homeExplore()
   {
-    $updates = Updates::verifyCountryBlocking()
+    $updates = Updates::visibleToViewer(auth()->id())
+      ->verifyCountryBlocking()
       ->whereStatus('active')
       ->orderBy('updates.id', 'desc')
       ->getSelectRelations()
@@ -238,7 +240,7 @@ class HomeController extends Controller
     if (strlen($query) >= 3) {
       $title = __('general.search') . ' "' . $query . '"';
 
-      $users = User::where('users.status', 'active')
+      $users = User::visibleToViewer(auth()->id())->where('users.status', 'active')
         ->where('username', 'LIKE', '%' . $query . '%')
         ->whereVerifiedId('yes')
         ->where('id', '<>', config('settings.hide_admin_profile') == 'on' ? 1 : 0)
@@ -264,7 +266,7 @@ class HomeController extends Controller
     } else {
 
       if ($type == 'free') {
-        $users = User::where('users.status', 'active')
+        $users = User::visibleToViewer(auth()->id())->where('users.status', 'active')
           ->whereVerifiedId('yes')
           ->where('id', '<>', config('settings.hide_admin_profile') == 'on' ? 1 : 0)
           ->whereFreeSubscription('yes')
@@ -282,7 +284,7 @@ class HomeController extends Controller
           ->simplePaginate($resultShowByPage);
       } else {
 
-        $data = User::where('users.status', 'active');
+        $data = User::visibleToViewer(auth()->id())->where('users.status', 'active');
 
         $whereRawFeatured = $type == 'featured' ? 'featured = "yes"' : 'users.status = "active"';
 
@@ -409,7 +411,7 @@ class HomeController extends Controller
     }
 
     if ($type == 'free') {
-      $users = User::where('users.status', 'active')
+      $users = User::visibleToViewer(auth()->id())->where('users.status', 'active')
         ->whereRaw("FIND_IN_SET(?, categories_id) > 0", [$category->id])
         ->whereVerifiedId('yes')
         ->where('id', '<>', $this->settings->hide_admin_profile == 'on' ? 1 : 0)
@@ -423,7 +425,7 @@ class HomeController extends Controller
         ->simplePaginate(12);
     } else {
 
-      $data = User::where('users.status', 'active');
+      $data = User::visibleToViewer(auth()->id())->where('users.status', 'active');
 
       $whereRawFeatured = $type == 'featured' ? 'featured = "yes"' : 'users.status = "active"';
 
@@ -665,7 +667,7 @@ class HomeController extends Controller
     $data = "";
 
     if ($query != '' && strlen($query) >= 2) {
-      $sql = User::where('status', 'active')
+      $sql = User::visibleToViewer(auth()->id())->where('status', 'active')
         ->where('username', 'LIKE', '%' . $query . '%')
         ->whereVerifiedId('yes')
         ->where('id', '<>', $this->settings->hide_admin_profile == 'on' ? 1 : 0)
@@ -748,6 +750,12 @@ class HomeController extends Controller
         ->whereType('normal')
         ->where('live_streamings.updated_at', '>', now()->subMinutes(5))
         ->where('status', '0')
+        ->when(auth()->check(), function ($query) {
+            $query->whereNotIn(
+                'live_streamings.user_id',
+                Restrictions::blockedUserIdsFor(auth()->id())
+            );
+        })
         ->whereHas('user', function ($q) {
             $q->where('blocked_countries', 'NOT LIKE', '%' . Helper::userCountry() . '%');
         });

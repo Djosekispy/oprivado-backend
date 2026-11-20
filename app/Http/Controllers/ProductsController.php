@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helper;
 use App\Models\Reports;
 use App\Models\Products;
+use App\Models\Restrictions;
 use App\Models\TaxRates;
 use App\Models\Purchases;
 use Illuminate\Http\File;
@@ -41,6 +42,12 @@ class ProductsController extends Controller
     $category = null;
 
     $products = Products::with('seller:name,username,avatar')->whereStatus('1');
+    if (auth()->check()) {
+      $products->whereNotIn(
+        'products.user_id',
+        Restrictions::blockedUserIdsFor(auth()->id())
+      );
+    }
     $categories = ShopCategories::orderBy('name')->get();
 
     if ($cat) {
@@ -565,6 +572,9 @@ class ProductsController extends Controller
     }
 
     $product = Products::findOrFail($id);
+    if (auth()->check() && auth()->user()->isBlockedWith($product->user_id)) {
+      abort(404);
+    }
 
     if (
       !$product->status
@@ -624,6 +634,7 @@ class ProductsController extends Controller
   {
     // Find item exists
     $item = Products::findOrFail($this->request->id);
+    abort_if(auth()->user()->isBlockedWith($item->user_id), 404);
 
     // Shipping fee
     $shippingFee = $item->country_free_shipping <> auth()->user()->countries_id ? $item->shipping_fee : 0.00;
@@ -760,6 +771,7 @@ class ProductsController extends Controller
     $item = Products::whereId($id)
       ->whereType('digital')
       ->firstOrFail();
+    abort_if(auth()->user()->isBlockedWith($item->user_id), 404);
 
     if ($item->price !== '0.00') {
       $file = $item->purchases()

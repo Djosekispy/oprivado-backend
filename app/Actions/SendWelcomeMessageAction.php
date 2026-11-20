@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Helper;
 use App\Models\User;
 use App\Models\Messages;
+use App\Models\Restrictions;
 use App\Models\MediaMessages;
 use App\Models\Subscriptions;
 use App\Models\MediaWelcomeMessage;
@@ -17,6 +18,7 @@ final class SendWelcomeMessageAction
     {
         if (
             $creator->send_welcome_message
+            && !Restrictions::existsBetween($creator->id, $subscriberId)
             && SubscriptionDeleted::whereCreatorId($creator->id)->whereUserId($subscriberId)->doesntExist()
             && Subscriptions::whereCreatorId($creator->id)->whereUserId($subscriberId)->count() == 1
         ) {

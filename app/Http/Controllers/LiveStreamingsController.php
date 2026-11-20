@@ -157,6 +157,10 @@ public function create()
       ->whereVerifiedId('yes')
       ->firstOrFail();
 
+    if (auth()->check() && auth()->user()->isBlockedWith($creator->id)) {
+      abort(404);
+    }
+
     // Hidden Live Blocked Countries
     if (
       in_array(Helper::userCountry(), $creator->blockedCountries())

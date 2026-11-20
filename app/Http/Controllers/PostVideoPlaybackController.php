@@ -36,7 +36,8 @@ class PostVideoPlaybackController extends Controller
                 });
             })
             ->whereHas('updates', function ($query) {
-                $query->where('status', 'active');
+                $query->visibleToViewer(auth()->id())
+                    ->where('status', 'active');
             })
             ->first();
 

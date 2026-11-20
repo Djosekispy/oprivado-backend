@@ -32,7 +32,7 @@ class LiveStreamingPrivateController extends Controller
             config('settings.live_streaming_private') == 'off'
             || $user->verified_id == 'no'
             || $user->allow_live_streaming_private == 'off'
-            || auth()->user()->isRestricted($user->id)
+            || auth()->user()->isBlockedWith($user->id)
         ) {
             return response()->json([
                 'success' => false,
