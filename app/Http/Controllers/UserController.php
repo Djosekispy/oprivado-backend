@@ -166,10 +166,8 @@ class UserController extends Controller
   public function profile($slug, $media = null)
   {
     $user = User::visibleToViewer(auth()->id())
-      ->whereUsername($slug)
-      ->whereStatus('active')
-      ->orWhere('status', 'disabled')
-      ->whereUsername($slug)
+      ->where('username', $slug)
+      ->whereIn('status', ['active', 'disabled'])
       ->firstOrFail();
 
     if ($user->status == 'disabled') {
@@ -303,14 +301,6 @@ class UserController extends Controller
         ->whereIn('stripe_price', $user->plans()->pluck('name'))
         ->whereStripeStatus('incomplete')
         ->first();
-    }
-
-    //<<<-- * Redirect the user real name * -->>>
-    $uri = request()->path();
-    $uriCanonical = $user->username . $media;
-
-    if ($uri != $uriCanonical) {
-      return redirect($uriCanonical);
     }
 
     // Count all likes
