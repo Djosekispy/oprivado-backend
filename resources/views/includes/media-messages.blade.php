@@ -98,6 +98,10 @@
 				'mka' => 'audio/x-matroska',
 			];
 		@endphp
+	<a href="{{ url($msg->sender->username) }}" class="voice-message-avatar" aria-label="{{ '@'.$msg->sender->username }}">
+		<img src="{{ Helper::getFile(config('path.avatar').$msg->sender->avatar) }}" alt="{{ '@'.$msg->sender->username }}">
+		<span class="voice-message-avatar-mic" aria-hidden="true"><i class="feather icon-mic"></i></span>
+	</a>
 	<div class="voice-message-audio-container">
 		<audio class="voice-message-audio" preload="metadata">
 			<source src="{{Helper::getFile(config('path.messages').$media->file)}}" type="{{$audioMimeTypes[$audioExtension] ?? 'audio/mpeg'}}">

@@ -71,7 +71,7 @@
 </div><!-- media -->
 @else
 <div data="{{$msg->id}}" class="media py-2 chatlist">
-<a href="{{url($msg->sender->username)}}" class="align-self-end mr-3">
+<a href="{{url($msg->sender->username)}}" class="align-self-end mr-3 @if ($countFilesAudio > 0 && ($msg->price == 0.00 || auth()->user()->checkPayPerViewMsg($msg->id))) d-none @endif">
   <img src="{{Helper::getFile(config('path.avatar').$msg->sender->avatar)}}" class="rounded-circle avatar-chat" width="50" height="50">
 </a>
 <div class="media-body position-relative">

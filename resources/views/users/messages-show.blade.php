@@ -22,6 +22,39 @@
       min-width: 0;
     }
 
+    .voice-message-avatar {
+      position: relative;
+      display: block;
+      flex: 0 0 44px;
+      width: 44px;
+      height: 44px;
+      margin-right: .75rem;
+    }
+
+    .voice-message-avatar img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .voice-message-avatar-mic {
+      position: absolute;
+      right: -3px;
+      bottom: -2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 19px;
+      height: 19px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: #1689fa;
+      color: #fff;
+      font-size: 9px;
+    }
+
     .voice-message-audio-container {
       flex: 1 1 auto;
       min-width: 0;
