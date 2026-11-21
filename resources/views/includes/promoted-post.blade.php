@@ -5,6 +5,7 @@
 ></div>
 
 @once
+    @push('page-scripts')
     <script>
         (() => {
             const initializedFeeds = new WeakSet();
@@ -235,4 +236,5 @@
             }
         })();
     </script>
+    @endpush
 @endonce

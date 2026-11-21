@@ -948,6 +948,8 @@ if (request()->ajax()) {
 		
 @include('includes.advertising')
 
+		@once
+		@push('page-scripts')
 		<script>
 document.addEventListener('input', function(event) {
 	if (!event.target.classList.contains('promo-days-input')) {
@@ -984,4 +986,6 @@ document.addEventListener('input', function(event) {
 	}
 });
 </script>
+		@endpush
+		@endonce
 		

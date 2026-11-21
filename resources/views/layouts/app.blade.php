@@ -1243,6 +1243,7 @@ window.addEventListener('load', function () {
   @endauth
 
   @yield('javascript')
+  @stack('page-scripts')
 
 	@if (session('promotion_success'))
   <script>
