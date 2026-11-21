@@ -1245,6 +1245,57 @@ window.addEventListener('load', function () {
   @yield('javascript')
   @stack('page-scripts')
 
+  <script>
+    (function () {
+      function updatePromotionBudget(input) {
+        if (!input || !input.classList || !input.classList.contains('promo-days-input')) {
+          return;
+        }
+
+        const days = Number(input.value || 0);
+        const wallet = Number(input.dataset.wallet || 0);
+        const dailyPrice = Number(input.dataset.dailyPrice);
+        const form = input.closest('form');
+        const target = form && input.dataset.target ? form.querySelector(input.dataset.target) : null;
+        const insufficientFunds = days * dailyPrice > wallet;
+        const invalidDays = !Number.isInteger(days) || days < 1 || days > 365;
+
+        if (!Number.isFinite(dailyPrice) || dailyPrice <= 0) {
+          console.error('O preço diário da promoção não está configurado corretamente.');
+          return;
+        }
+
+        if (target) {
+          target.textContent = new Intl.NumberFormat('pt-AO', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          }).format(days * dailyPrice) + ' Kz';
+        }
+
+        if (form) {
+          const error = form.querySelector('.promo-insufficient-funds');
+          const submit = form.querySelector('.promo-confirm-button');
+
+          if (error) {
+            error.classList.toggle('d-none', !insufficientFunds);
+          }
+
+          if (submit) {
+            submit.disabled = insufficientFunds || invalidDays;
+          }
+        }
+      }
+
+      document.addEventListener('input', function (event) {
+        updatePromotionBudget(event.target);
+      });
+
+      document.addEventListener('change', function (event) {
+        updatePromotionBudget(event.target);
+      });
+    })();
+  </script>
+
 	@if (session('promotion_success'))
   <script>
     swal({

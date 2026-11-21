@@ -367,6 +367,9 @@
 </div><!-- card body -->
 
 		@if (auth()->check() && auth()->user()->id == $response->creator->id)
+			@php
+				$promotionDailyPrice = \App\Http\Controllers\PromotedPostController::DAILY_PRICE;
+			@endphp
 	<div class="modal fade" id="promotePostModal-{{$response->id}}" tabindex="-1" role="dialog" aria-hidden="true">
 		<div class="modal-dialog modal-sm" role="document">
 			<div class="modal-content">
@@ -393,19 +396,19 @@
             <div class="input-group-prepend">
               <span style=" font-size: 13px!important; font-weight: 400; " for="days-{{$response->id}}" class="input-group-text pr-0">Dias</span>
             </div>
-				<input style=" padding-left: 8px!important; " id="days-{{$response->id}}" type="number" name="days" min="1" max="365" value="1" class="form-control promo-days-input" data-target="#promo-total-{{$response->id}}" data-wallet="{{ auth()->user()->wallet }}" data-daily-price="1000">
+				<input style=" padding-left: 8px!important; " id="days-{{$response->id}}" type="number" name="days" min="1" max="365" value="1" class="form-control promo-days-input" data-target="#promo-total-{{$response->id}}" data-wallet="{{ auth()->user()->wallet }}" data-daily-price="{{ $promotionDailyPrice }}">
             </div>
 						
 					<div class="text-muted mb-1">Orçamento total</div>
 					
-						<div class="mt-1 font-weight-bold"><span style="font-size: 20px;" id="promo-total-{{$response->id}}">1.000 Kz</span></div>
-						<div class="alert alert-danger promo-insufficient-funds mt-3 mb-0 @if (auth()->user()->wallet >= 1000) d-none @endif" role="alert">
+						<div class="mt-1 font-weight-bold"><span style="font-size: 20px;" id="promo-total-{{$response->id}}">{{ number_format($promotionDailyPrice, 0, ',', '.') }} Kz</span></div>
+						<div class="alert alert-danger promo-insufficient-funds mt-3 mb-0 @if (auth()->user()->wallet >= $promotionDailyPrice) d-none @endif" role="alert">
 							Saldo insuficiente, por favor carregue a carteira.
 						</div>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-google btn-sm" data-dismiss="modal">Cancelar</button>
-						<button type="submit" class="btn btn-primary btn-sm promo-confirm-button" @if (auth()->user()->wallet < 1000) disabled @endif>Confirmar</button>
+						<button type="submit" class="btn btn-primary btn-sm promo-confirm-button" @if (auth()->user()->wallet < $promotionDailyPrice) disabled @endif>Confirmar</button>
 					</div>
 				</form>
 			</div>
@@ -947,45 +950,4 @@ if (request()->ajax()) {
 @include('includes.sidebar-top-earners')
 		
 @include('includes.advertising')
-
-		@once
-		@push('page-scripts')
-		<script>
-document.addEventListener('input', function(event) {
-	if (!event.target.classList.contains('promo-days-input')) {
-		return;
-	}
-
-	const days = Number(event.target.value || 0);
-	const wallet = Number(event.target.dataset.wallet || 0);
-	const dailyPrice = Number(event.target.dataset.dailyPrice || 1000);
-	const total = days * dailyPrice;
-	const target = document.querySelector(event.target.dataset.target);
-	const form = event.target.closest('form');
-	const insufficientFunds = total > wallet;
-	const invalidDays = !Number.isInteger(days) || days < 1 || days > 365;
-
-	if (target) {
-		target.textContent = new Intl.NumberFormat('pt-AO', {
-			minimumFractionDigits: 0,
-			maximumFractionDigits: 0
-		}).format(total) + ' Kz';
-	}
-
-	if (form) {
-		const error = form.querySelector('.promo-insufficient-funds');
-		const submit = form.querySelector('.promo-confirm-button');
-
-		if (error) {
-			error.classList.toggle('d-none', !insufficientFunds);
-		}
-
-		if (submit) {
-			submit.disabled = insufficientFunds || invalidDays;
-		}
-	}
-});
-</script>
-		@endpush
-		@endonce
 		
