@@ -771,7 +771,7 @@
       }
 
       new window.Plyr(audio, {
-        controls: ['play', 'progress', 'current-time', 'duration']
+        controls: ['play', 'progress', 'duration']
       });
 
       const wrapper = audio.closest('.voice-message-player');
