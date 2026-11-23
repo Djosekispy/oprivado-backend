@@ -309,7 +309,7 @@
               <div id="voiceMessagePreview" class="w-100 mb-2 display-none">
                 <div class="voice-message-player d-flex align-items-center">
                   <div class="voice-message-audio-container">
-                    <audio id="voiceMessageAudio" class="voice-message-audio" preload="metadata"></audio>
+                    <audio id="voiceMessageAudio" class="voice-message-audio" preload="auto"></audio>
                   </div>
                   <button type="button" class="btn btn-link text-muted p-0 ml-2 voice-message-speed" data-voice-speed aria-label="Velocidade de reprodução: 1x">1x</button>
                   <button type="button" id="discardVoiceMessage" class="btn btn-link text-danger p-0 ml-2 voice-message-remove" title="Remover áudio" aria-label="Remover áudio">
@@ -454,10 +454,18 @@
   let voiceBlob = null;
   let voiceExtension = null;
   let previewUrl = null;
+  let voiceDuration = 0;
   let uploading = false;
   let startingRecording = false;
   let recordingInterval = null;
   let recordingStartedAt = null;
+
+  audioPreview.addEventListener('voiceDurationResolved', function () {
+    const resolvedDuration = Number(audioPreview.dataset.resolvedDuration);
+    if (Number.isFinite(resolvedDuration) && resolvedDuration > 0) {
+      voiceDuration = Math.round(resolvedDuration);
+    }
+  });
 
   function showError(message) {
     errorMessage.textContent = message;
@@ -537,6 +545,7 @@
     stopRecordingFeedback();
     voiceBlob = null;
     voiceExtension = null;
+    voiceDuration = 0;
     tokenInput.value = '';
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     previewUrl = null;
@@ -671,13 +680,32 @@
     }, 0);
   }
 
-  function uploadVoiceAndSubmit() {
+  function waitForVoiceDuration(timeout) {
+    return new Promise(function (resolve) {
+      if (voiceDuration > 0) {
+        resolve(voiceDuration);
+        return;
+      }
+
+      const finish = function () {
+        window.clearTimeout(timer);
+        resolve(voiceDuration);
+      };
+      const timer = window.setTimeout(finish, timeout);
+      audioPreview.addEventListener('voiceDurationResolved', finish, { once: true });
+    });
+  }
+
+  async function uploadVoiceAndSubmit() {
     if (uploading) return;
     uploading = true;
     sendButton.disabled = true;
 
+    await waitForVoiceDuration(2000);
+
     const formData = new FormData();
     formData.append('audio', voiceBlob, 'voice-message.' + voiceExtension);
+    formData.append('voice_duration', String(Math.round(voiceDuration || 0)));
     formData.append('_token', form.querySelector('input[name="_token"]').value);
 
     fetch(form.dataset.voiceUploadUrl, {
@@ -756,6 +784,57 @@
 </script>
 <script>
 (function () {
+  function repairSafariAudioDuration(audio) {
+    function hasFiniteDuration() {
+      return Number.isFinite(audio.duration) && audio.duration > 0;
+    }
+
+    function syncDuration() {
+      if (!hasFiniteDuration()) return;
+
+      const duration = Math.round(audio.duration);
+      if (duration > 0) {
+        audio.dataset.resolvedDuration = String(duration);
+        audio.dispatchEvent(new Event('voiceDurationResolved'));
+      }
+    }
+
+    function seekToDiscoverDuration() {
+      if (!/Safari\//.test(navigator.userAgent) || /Chrome|Chromium|CriOS|FxiOS/.test(navigator.userAgent)) return;
+      if (hasFiniteDuration()) {
+        syncDuration();
+        return;
+      }
+
+      const restorePosition = function () {
+        audio.removeEventListener('timeupdate', restorePosition);
+        if (Number.isFinite(audio.duration)) {
+          audio.currentTime = 0;
+          syncDuration();
+        }
+      };
+
+      audio.addEventListener('timeupdate', restorePosition);
+      try {
+        audio.currentTime = 1e101;
+      } catch (error) {
+        audio.removeEventListener('timeupdate', restorePosition);
+      }
+    }
+
+    audio.addEventListener('loadedmetadata', function () {
+      syncDuration();
+      seekToDiscoverDuration();
+    });
+    audio.addEventListener('durationchange', syncDuration);
+    audio.load();
+
+    if (audio.readyState >= 1) {
+      syncDuration();
+      seekToDiscoverDuration();
+    }
+  }
+
   function initializeVoicePlayers(root) {
     const audioElements = [];
     if (root.matches && root.matches('.voice-message-audio')) audioElements.push(root);
@@ -773,6 +852,8 @@
       new window.Plyr(audio, {
         controls: ['play', 'progress', 'duration']
       });
+
+      repairSafariAudioDuration(audio);
 
       const wrapper = audio.closest('.voice-message-player');
       const speedButton = wrapper.querySelector('[data-voice-speed]');

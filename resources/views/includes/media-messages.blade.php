@@ -103,7 +103,7 @@
 		<span class="voice-message-avatar-mic" aria-hidden="true"><i class="feather icon-mic"></i></span>
 	</a>
 	<div class="voice-message-audio-container">
-		<audio class="voice-message-audio" preload="metadata">
+		<audio class="voice-message-audio" preload="auto" @if (!empty($media->duration_video)) data-duration="{{ $media->duration_video }}" @endif>
 			<source src="{{Helper::getFile(config('path.messages').$media->file)}}" type="{{$audioMimeTypes[$audioExtension] ?? 'audio/mpeg'}}">
 			Your browser does not support the audio tag.
 		</audio>

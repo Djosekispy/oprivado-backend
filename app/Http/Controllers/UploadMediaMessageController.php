@@ -109,7 +109,8 @@ class UploadMediaMessageController extends Controller
 				'max:' . $maxFileSize,
 				'mimes:webm,ogg,m4a,mp3',
 				'mimetypes:audio/webm,video/webm,audio/ogg,application/ogg,audio/mp4,audio/x-m4a,audio/mpeg'
-			]
+			],
+			'voice_duration' => 'nullable|numeric|min:0|max:86400'
 		]);
 
 		$audio = $request->file('audio');
@@ -131,6 +132,9 @@ class UploadMediaMessageController extends Controller
 			'file' => $fileName,
 			'file_name' => '',
 			'file_size' => '',
+			'duration_video' => $request->filled('voice_duration')
+				? Helper::getDurationInMinutes((int) round((float) $request->input('voice_duration')))
+				: null,
 			'token' => $token,
 			'status' => 'pending',
 			'created_at' => now()
